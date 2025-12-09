@@ -125,6 +125,10 @@ const tools = [
 async function handleToolCall(env: Env, name: string, args: any) {
   switch (name) {
     case "create_link": {
+      // Auto-format slug if provided
+      if (args.slug && !args.slug.startsWith("/")) {
+        args.slug = "/" + args.slug;
+      }
       const result = await apiRequest(
         env,
         "POST",
@@ -230,7 +234,6 @@ export class MyDurableObject extends DurableObject<Env> {
           sendJSONRPC(server, { jsonrpc: "2.0", id, result: value });
           return;
         }
-
       } catch (err: any) {
         sendJSONRPC(server, {
           jsonrpc: "2.0",
