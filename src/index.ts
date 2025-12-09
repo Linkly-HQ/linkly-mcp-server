@@ -204,7 +204,7 @@ export class MyDurableObject extends DurableObject<Env> {
           });
           return;
         }
-        if(method==="notificatoins/initialized"){
+        if(method==="notifications/initialized"){
           return;
         }
         // Return tools list
@@ -238,15 +238,6 @@ export class MyDurableObject extends DurableObject<Env> {
           sendJSONRPC(server, { jsonrpc: "2.0", id, result: value });
           return;
         }
-
-        // // Handle ChatGPT Desktop: method like "linkly.create_link"
-        // if (method && method.startsWith("linkly.")) {
-        //   const name = method.replace("linkly.", "");
-        //   const args = params || {};
-        //   const value = await handleToolCall(this.env, name, args);
-        //   sendJSONRPC(server, { jsonrpc: "2.0", id, result: value });
-        //   return;
-        // }
 
         // Unknown method
         sendJSONRPC(server, {
