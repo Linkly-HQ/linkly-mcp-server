@@ -42,13 +42,79 @@ async function apiRequest(
 /** Available tools */
 const tools = [
   {
-    name: "linkly.create_link",
+    name: "create_link",
     description: "Create a new Linkly short link.",
     inputSchema: {
       type: "object",
       properties: {
         url: { type: "string", description: "Destination URL", required: true },
         name: { type: "string", description: "Name/nickname for the link" },
+        note: { type: "string", description: "A private note about this link" },
+        domain: {
+          type: "string",
+          description: "Custom domain for the short link (without trailing /)",
+        },
+        slug: {
+          type: "string",
+          decsription: "Custom slug/suffix for the link (must start with /)",
+        },
+        enabled: {
+          type: "boolean",
+          descripiton: "Whether the link is active (default: true)",
+        },
+        utm_source: { type: "string", description: "UTM source parameter" },
+        utm_medium: { type: "string", description: "UTM medium parameter" },
+        utm_campaign: { type: "string", description: "UTM campaign parameter" },
+        utm_term: { type: "string", description: "UTM term parameter" },
+        utm_content: { type: "string", description: "UTM content parameter" },
+        og_title: {
+          type: "string",
+          description: "Open Graph title for social media previews",
+        },
+        og_description: {
+          type: "string",
+          description: "Open Graph description for social media previews",
+        },
+        og_image: {
+          type: "string",
+          description: "Open Graph image URL for social media previews",
+        },
+        fb_pixel_id: {
+          type: "string",
+          description: "Meta/Facebook Pixel ID for tracking",
+        },
+        ga4_tag_id: {
+          type: "string",
+          description: "Google Analytics 4 tag ID",
+        },
+        gtm_id: {
+          type: "string",
+          description: "Google Tag Manager container ID",
+        },
+        cloaking: {
+          type: "boolean",
+          description: "Hide destination URL by opening in an iframe",
+        },
+        forward_params: {
+          type: "boolean",
+          description: "Forward URL parameters to the destination",
+        },
+        block_bots: {
+          type: "boolean",
+          description: "Block known bots and spiders from following the link",
+        },
+        hide_referrer: {
+          type: "boolean",
+          description: "Hide referrer information when users click",
+        },
+        expiry_datetime: {
+          type: "string",
+          description: "ISO 8601 datetime when the link should expire",
+        },
+        expiry_destination: {
+          type: "string",
+          description: "Fallback URL after expiry (404 if blank)",
+        },
       },
       required: ["url"],
     },
@@ -121,6 +187,26 @@ export class MyDurableObject extends DurableObject<Env> {
       const params = data.params ?? {};
 
       try {
+        if(method === "initialize"){
+          sendJSONRPC(server,{
+            jsonrpc:"2.0",
+            id,
+            result:{
+              protocolVersion:"2025-06-18",
+              capabilities:{
+                tools:{}
+              },
+              serverInfo:{
+                name:"linkly-mcp-server",
+                version:"1.0.0"
+              }
+            }
+          });
+          return;
+        }
+        if(method==="notificatoins/initialized"){
+          return;
+        }
         // Return tools list
         if (
           method === "tools/list" ||
@@ -132,9 +218,14 @@ export class MyDurableObject extends DurableObject<Env> {
         }
 
         // Handle Postman MCP call
-        if (method === "tools/call" || method === "call_tool" || method === "call") {
+        if (
+          method === "tools/call" ||
+          method === "call_tool" ||
+          method === "call"
+        ) {
           const name = params.name || params?.tool?.name || null;
-          const args = params.arguments || params.args || params?.arguments || {};
+          const args =
+            params.arguments || params.args || params?.arguments || {};
           if (!name) {
             sendJSONRPC(server, {
               jsonrpc: "2.0",
@@ -148,14 +239,14 @@ export class MyDurableObject extends DurableObject<Env> {
           return;
         }
 
-        // Handle ChatGPT Desktop: method like "linkly.create_link"
-        if (method && method.startsWith("linkly.")) {
-          const name = method.replace("linkly.", "");
-          const args = params || {};
-          const value = await handleToolCall(this.env, name, args);
-          sendJSONRPC(server, { jsonrpc: "2.0", id, result: value });
-          return;
-        }
+        // // Handle ChatGPT Desktop: method like "linkly.create_link"
+        // if (method && method.startsWith("linkly.")) {
+        //   const name = method.replace("linkly.", "");
+        //   const args = params || {};
+        //   const value = await handleToolCall(this.env, name, args);
+        //   sendJSONRPC(server, { jsonrpc: "2.0", id, result: value });
+        //   return;
+        // }
 
         // Unknown method
         sendJSONRPC(server, {
