@@ -47,7 +47,7 @@ const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        url: { type: "string", description: "Destination URL", required: true },
+        url: { type: "string", description: "Destination URL"},
         name: { type: "string", description: "Name/nickname for the link" },
         note: { type: "string", description: "A private note about this link" },
         domain: {
@@ -56,11 +56,11 @@ const tools = [
         },
         slug: {
           type: "string",
-          decsription: "Custom slug/suffix for the link (must start with /)",
+          description: "Custom slug/suffix for the link (must start with /)",
         },
         enabled: {
           type: "boolean",
-          descripiton: "Whether the link is active (default: true)",
+          description: "Whether the link is active (default: true)",
         },
         utm_source: { type: "string", description: "UTM source parameter" },
         utm_medium: { type: "string", description: "UTM medium parameter" },
