@@ -47,7 +47,7 @@ const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        url: { type: "string", description: "Destination URL"},
+        url: { type: "string", description: "Destination URL" },
         name: { type: "string", description: "Name/nickname for the link" },
         note: { type: "string", description: "A private note about this link" },
         domain: {
@@ -187,42 +187,34 @@ export class MyDurableObject extends DurableObject<Env> {
       const params = data.params ?? {};
 
       try {
-        if(method === "initialize"){
-          sendJSONRPC(server,{
-            jsonrpc:"2.0",
+        if (method === "initialize") {
+          sendJSONRPC(server, {
+            jsonrpc: "2.0",
             id,
-            result:{
-              protocolVersion:"2025-06-18",
-              capabilities:{
-                tools:{}
+            result: {
+              protocolVersion: "2025-06-18",
+              capabilities: {
+                tools: {},
               },
-              serverInfo:{
-                name:"linkly-mcp-server",
-                version:"1.0.0"
-              }
-            }
+              serverInfo: {
+                name: "linkly-mcp-server",
+                version: "1.0.0",
+              },
+            },
           });
           return;
         }
-        if(method==="notifications/initialized"){
+        if (method === "notifications/initialized") {
           return;
         }
         // Return tools list
-        if (
-          method === "tools/list" ||
-          method === "tools/list_tools" ||
-          method === "list_tools"
-        ) {
+        if (method === "tools/list") {
           sendJSONRPC(server, { jsonrpc: "2.0", id, result: { tools } });
           return;
         }
 
         // Handle Postman MCP call
-        if (
-          method === "tools/call" ||
-          method === "call_tool" ||
-          method === "call"
-        ) {
+        if (method === "tools/call") {
           const name = params.name || params?.tool?.name || null;
           const args =
             params.arguments || params.args || params?.arguments || {};
@@ -239,12 +231,6 @@ export class MyDurableObject extends DurableObject<Env> {
           return;
         }
 
-        // Unknown method
-        sendJSONRPC(server, {
-          jsonrpc: "2.0",
-          id,
-          error: { code: -32601, message: "Method not found" },
-        });
       } catch (err: any) {
         sendJSONRPC(server, {
           jsonrpc: "2.0",
