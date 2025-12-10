@@ -19,6 +19,7 @@ async function apiRequest(
       "X-API-KEY": env.API_KEY,
     },
   };
+
   if (body) {
     options.body = JSON.stringify({
       ...body,
@@ -26,11 +27,13 @@ async function apiRequest(
       api_key: env.API_KEY,
     });
   }
+
   const resp = await fetch(url, options);
   if (!resp.ok) {
     const text = await resp.text();
     throw new Error(`Linkly API ${resp.status}: ${text}`);
   }
+
   const contentType = resp.headers.get("Content-Type") || "";
   if (contentType.includes("application/json")) {
     return resp.json();
@@ -39,7 +42,7 @@ async function apiRequest(
   }
 }
 
-/** Available tools */
+/** Available MCP tools */
 const tools = [
   {
     name: "create_link",
@@ -119,42 +122,81 @@ const tools = [
       required: ["url"],
     },
   },
-];
+] as const;
 
-/** Handle tool calls */
+/** Handle MCP tool calls */
 async function handleToolCall(env: Env, name: string, args: any) {
   switch (name) {
     case "create_link": {
+      const normalized = { ...args };
+
       // Auto-format slug if provided
-      if (args.slug && !args.slug.startsWith("/")) {
-        args.slug = "/" + args.slug;
+      if (normalized.slug && !normalized.slug.startsWith("/")) {
+        normalized.slug = "/" + normalized.slug;
       }
+
       const result = await apiRequest(
         env,
         "POST",
         `/api/v1/workspace/${env.WORKSPACE_ID}/links`,
-        args
+        normalized
       );
+
+      // MCP tool result content
       return {
-        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+        isError: false,
       };
     }
-    // Add other tool implementations here if needed
+
     default:
-      throw new Error(`Unknown tool: ${name}`);
+      // Protocol error: unknown tool
+      const err: Error & { code?: number } = new Error(
+        `Unknown tool: ${name}`
+      );
+      err.code = -32601;
+      throw err;
   }
 }
 
-/** Send JSON-RPC response via WebSocket */
+/** Helper: send JSON-RPC response/notification */
 function sendJSONRPC(socket: WebSocket, payload: any) {
   try {
-    socket.send(JSON.stringify(payload));
+    socket.send(
+      JSON.stringify({
+        jsonrpc: "2.0",
+        ...payload,
+      })
+    );
   } catch (e) {
     console.error("WebSocket send error:", e);
   }
 }
 
-/** Durable Object */
+/** Helper: send JSON-RPC error */
+function sendJSONRPCError(
+  socket: WebSocket,
+  id: string | number | null,
+  code: number,
+  message: string,
+  data?: any
+) {
+  sendJSONRPC(socket, {
+    id,
+    error: {
+      code,
+      message,
+      ...(data !== undefined ? { data } : {}),
+    },
+  });
+}
+
+/** Durable Object implementing the MCP server over WebSocket */
 export class MyDurableObject extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -163,107 +205,181 @@ export class MyDurableObject extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
     const upgradeHeader = request.headers.get("Upgrade") || "";
     if (upgradeHeader.toLowerCase() !== "websocket") {
-      return new Response(
-        "MCP Durable Object is running. Connect via WebSocket.",
-        { status: 200 }
-      );
+      return new Response("Linkly MCP server is running. Connect via WebSocket.", {
+        status: 200,
+      });
     }
 
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
-    server.accept();
-    // Send MCP handshake immediately (required by MCP spec)
-    sendJSONRPC(server, {
-      type: "root",
-      protocolVersion: "2024-11-05",
-      capabilities: {
-        tools: {},
-      },
-      serverInfo: {
-        name: "linkly-mcp-server",
-        version: "1.0.0",
-      },
-    });
 
-    server.addEventListener("message", async (evt: any) => {
+    // Accept the WebSocket; MCP will talk JSON-RPC over this
+    server.accept();
+
+    server.addEventListener("message", async (evt: MessageEvent) => {
       let data: any;
       try {
-        data = typeof evt.data === "string" ? JSON.parse(evt.data) : evt.data;
+        const raw = typeof evt.data === "string" ? evt.data : evt.data.toString();
+        data = JSON.parse(raw);
       } catch (err) {
-        sendJSONRPC(server, {
-          jsonrpc: "2.0",
-          id: null,
-          error: { code: -32700, message: "Parse error" },
-        });
+        // JSON parse error
+        sendJSONRPCError(server, null, -32700, "Parse error");
         return;
       }
 
       const id = data.id ?? null;
-      const method = data.method;
-      const params = data.params ?? {};
+      const method = data.method as string | undefined;
+      const params = (data.params ?? {}) as Record<string, any>;
+
+      if (data.jsonrpc !== "2.0") {
+        sendJSONRPCError(server, id, -32600, "Invalid JSON-RPC version");
+        return;
+      }
+
+      if (!method) {
+        sendJSONRPCError(server, id, -32600, "Missing method");
+        return;
+      }
 
       try {
+        // 1) Initialization handshake
         if (method === "initialize") {
+          const clientProtocol = params.protocolVersion as string | undefined;
+
           sendJSONRPC(server, {
-            type: "initialize_response",
             id,
             result: {
+              // Echo client version if given, else fall back to a known revision
+              protocolVersion: clientProtocol ?? "2025-06-18",
               capabilities: {
-                tools: {},
+                tools: {
+                  // We don't emit tools/list_changed notifications yet
+                  listChanged: false,
+                },
+                // You could add resources/prompts capabilities here in the future
               },
+              serverInfo: {
+                name: "linkly-mcp-server",
+                version: "1.0.0",
+              },
+            },
+          });
+
+          return;
+        }
+
+        // 2) Optional notification when client finished its setup
+        if (method === "notifications/initialized") {
+          // No response for notifications
+          return;
+        }
+
+        // 3) MCP ping utility
+        if (method === "ping") {
+          sendJSONRPC(server, {
+            id,
+            result: {}, // Empty result is fine
+          });
+          return;
+        }
+
+        // 4) List tools
+        if (method === "tools/list") {
+          // Pagination via params.cursor is ignored for now
+          sendJSONRPC(server, {
+            id,
+            result: {
+              tools,
+              nextCursor: null,
             },
           });
           return;
         }
 
-        if (method === "notifications/initialized") {
-          return;
-        }
-        // Return tools list
-        if (method === "tools/list") {
-          sendJSONRPC(server, { jsonrpc: "2.0", id, result: { tools } });
+        // 5) Call tool
+        if (method === "tools/call") {
+          const name =
+            params.name || params.tool?.name || params?.toolName || null;
+          const args =
+            params.arguments || params.args || params?.arguments || {};
+
+          if (!name || typeof name !== "string") {
+            sendJSONRPCError(
+              server,
+              id,
+              -32602,
+              "Missing or invalid tool name"
+            );
+            return;
+          }
+
+          try {
+            const toolResult = await handleToolCall(this.env, name, args);
+
+            sendJSONRPC(server, {
+              id,
+              result: {
+                content: toolResult.content,
+                // isError indicates tool-level failure vs protocol error
+                isError: !!toolResult.isError,
+              },
+            });
+          } catch (err: any) {
+            // Tool-level failure -> return as successful result with isError: true
+            const message =
+              err?.message || `Tool '${name}' failed with unknown error`;
+            sendJSONRPC(server, {
+              id,
+              result: {
+                content: [
+                  {
+                    type: "text",
+                    text: message,
+                  },
+                ],
+                isError: true,
+              },
+            });
+          }
+
           return;
         }
 
-        // Handle Postman MCP call
-        if (method === "tools/call") {
-          const name = params.name || params?.tool?.name || null;
-          const args =
-            params.arguments || params.args || params?.arguments || {};
-          if (!name) {
-            sendJSONRPC(server, {
-              jsonrpc: "2.0",
-              id,
-              error: { code: -32602, message: "Missing tool name" },
-            });
-            return;
-          }
-          const value = await handleToolCall(this.env, name, args);
-          sendJSONRPC(server, { jsonrpc: "2.0", id, result: value });
-          return;
-        }
+        // 6) Unknown method
+        sendJSONRPCError(server, id, -32601, `Method not found: ${method}`);
       } catch (err: any) {
-        sendJSONRPC(server, {
-          jsonrpc: "2.0",
+        console.error("Unexpected MCP handler error:", err);
+        sendJSONRPCError(
+          server,
           id,
-          error: { code: 32000, message: err?.message || String(err) },
-        });
+          -32603,
+          "Internal error",
+          err?.message ?? String(err)
+        );
       }
     });
 
-    server.addEventListener("close", () => {});
-    server.addEventListener("error", () => {});
+    server.addEventListener("close", () => {
+      // You could clean up per-connection state here
+    });
 
-    return new Response(null, { status: 101, webSocket: client });
+    server.addEventListener("error", (evt) => {
+      console.error("WebSocket error:", evt);
+    });
+
+    return new Response(null, {
+      status: 101,
+      webSocket: client,
+    });
   }
 }
 
-/** Exported handler */
+/** Exported Worker handler that routes to the Durable Object MCP server */
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     if (!env.API_KEY || !env.WORKSPACE_ID) {
       return new Response(
-        "Error: LINKLY_API_KEY and LINKLY_WORKSPACE_ID environment variables are required",
+        "Error: API_KEY and WORKSPACE_ID environment variables are required",
         { status: 400 }
       );
     }
