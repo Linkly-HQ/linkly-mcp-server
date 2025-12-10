@@ -172,6 +172,18 @@ export class MyDurableObject extends DurableObject<Env> {
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
     server.accept();
+    // Send MCP handshake immediately (required by MCP spec)
+    sendJSONRPC(server, {
+      type: "root",
+      protocolVersion: "2024-11-05",
+      capabilities: {
+        tools: {},
+      },
+      serverInfo: {
+        name: "linkly-mcp-server",
+        version: "1.0.0",
+      },
+    });
 
     server.addEventListener("message", async (evt: any) => {
       let data: any;
@@ -193,21 +205,17 @@ export class MyDurableObject extends DurableObject<Env> {
       try {
         if (method === "initialize") {
           sendJSONRPC(server, {
-            jsonrpc: "2.0",
+            type: "initialize_response",
             id,
             result: {
-              protocolVersion: "2025-06-18",
               capabilities: {
                 tools: {},
-              },
-              serverInfo: {
-                name: "linkly-mcp-server",
-                version: "1.0.0",
               },
             },
           });
           return;
         }
+
         if (method === "notifications/initialized") {
           return;
         }
