@@ -598,7 +598,10 @@ export default {
             JSON.stringify(
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
-                capabilities: { tools: { listChanged: false } },
+                capabilities: { tools: { listChanged: false },auth:{
+                  type:"oauth",
+                  authority:"basic"
+                } },
                 serverInfo: {
                   name: "mcp-minimal",
                   version: "1.0.0",
