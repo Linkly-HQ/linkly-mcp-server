@@ -39,15 +39,25 @@ async function apiRequest(
 }
 
 const TOOLS = [
-  // {
-  //   name: "ping",
-  //   description: "Returns pong",
-  //   inputSchema: {
-  //     type: "object",
-  //     properties: {},
-  //     required: [],
-  //   },
-  // },
+  {
+    name: "ping",
+    description: "Returns pong",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "auth",
+    description:
+      "Returns the workspace ID and API key passed through OAuth basic auth.",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
   {
     name: "create_link",
     description:
@@ -627,6 +637,22 @@ export default {
               JSON.stringify(
                 jsonRpcResponse(id, {
                   content: [{ type: "text", text: "pong" }],
+                  isError: false,
+                })
+              ),
+              { headers: { "Content-Type": "application/json" } }
+            );
+          }
+          if (name === "auth") {
+            return new Response(
+              JSON.stringify(
+                jsonRpcResponse(id, {
+                  content: [
+                    {
+                      type: "text",
+                      text: `${request.headers.get("Authorization")} || "Empty"`,
+                    },
+                  ],
                   isError: false,
                 })
               ),
