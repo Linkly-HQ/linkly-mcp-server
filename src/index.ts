@@ -650,7 +650,7 @@ export default {
                   content: [
                     {
                       type: "text",
-                      text: `${request.headers.get("Authorization")} || "Empty"`,
+                      text: `${request.headers.get("Authorization")|| "Empty"} `,
                     },
                   ],
                   isError: false,
