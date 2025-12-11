@@ -1,5 +1,3 @@
-export interface Env {}
-
 function jsonRpcResponse(id: any, result: any) {
   return { jsonrpc: "2.0", id, result };
 }
@@ -10,6 +8,34 @@ function jsonRpcError(id: any, code: number, message: string) {
     id,
     error: { code, message },
   };
+}
+
+async function apiRequest(
+  env: Env,
+  method: string,
+  path: string,
+  body: any = null
+) {
+  const url = `https://app.linklyhq.com${path}`;
+
+  const options: RequestInit = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "X-WORKSPACE-ID": env.WORKSPACE_ID,
+      "X-API-KEY": env.API_KEY,
+    },
+  };
+
+  if (body) options.body = JSON.stringify(body);
+  const resp = await fetch(url, options);
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Linkly API ${resp.status}: ${text}`);
+  }
+  return resp.json();
 }
 
 const TOOLS = [
@@ -531,7 +557,7 @@ const TOOLS = [
 ];
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     // Health check
@@ -594,6 +620,7 @@ export default {
         // ---- tools/call ----
         if (method === "tools/call") {
           const name = params?.name;
+          const args = params?.arguments || {}; // <-- ADD THIS LINE
 
           if (name === "ping") {
             return new Response(
@@ -607,16 +634,28 @@ export default {
             );
           }
 
-          if(name === "create_link"){
+          if (name === "create_link") {
+            const result = await apiRequest(
+              env,
+              "POST",
+              `/api/v1/workspace/${env.WORKSPACE_ID}/links`,
+              args
+            );
+
             return new Response(
               JSON.stringify(
-                jsonRpcResponse(id,{
-                  content:[{type:'text',text:"This will create a new linkly link"}],
-                  isError:false
+                jsonRpcResponse(id, {
+                  content: [
+                    {
+                      type: "text",
+                      text: JSON.stringify(result, null, 2),
+                    },
+                  ],
+                  isError: false,
                 })
               ),
-              {headers:{"Content-Type":"application/json"}}
-            )
+              { headers: { "Content-Type": "application/json" } }
+            );
           }
 
           return new Response(
@@ -645,4 +684,4 @@ export default {
 
     return new Response("Not found", { status: 404 });
   },
-};
+} satisfies ExportedHandler<Env>;
