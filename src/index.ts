@@ -599,8 +599,7 @@ export default {
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: { listChanged: false },auth:{
-                  type:"oauth",
-                  authority:"basic"
+                  type:"basic"
                 } },
                 serverInfo: {
                   name: "mcp-minimal",
