@@ -621,8 +621,7 @@ export default {
           return new Response(
             JSON.stringify(
               jsonRpcResponse(id, {
-                tools: TOOLS,
-                nextCursor: null,
+                tools: TOOLS
               })
             ),
             { headers: { "Content-Type": "application/json" } }
