@@ -7,14 +7,14 @@
 	"name": "linkly-mcp-server-chatgpt",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-12-02",
-	"migrations": [
-		{
-			"new_sqlite_classes": [
-				"MyDurableObject"
-			],
-			"tag": "v1"
-		}
-	],
+	// "migrations": [
+	// 	{
+	// 		"new_sqlite_classes": [
+	// 			"MyDurableObject"
+	// 		],
+	// 		"tag": "v1"
+	// 	}
+	// ],
 	// "durable_objects": {
 	// 	"bindings": [
 	// 		{
