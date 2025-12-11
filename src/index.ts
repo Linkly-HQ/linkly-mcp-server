@@ -39,15 +39,15 @@ async function apiRequest(
 }
 
 const TOOLS = [
-  {
-    name: "ping",
-    description: "Returns pong",
-    inputSchema: {
-      type: "object",
-      properties: {},
-      required: [],
-    },
-  },
+  // {
+  //   name: "ping",
+  //   description: "Returns pong",
+  //   inputSchema: {
+  //     type: "object",
+  //     properties: {},
+  //     required: [],
+  //   },
+  // },
   {
     name: "create_link",
     description:
