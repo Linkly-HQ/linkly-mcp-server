@@ -1,63 +1,20 @@
-function jsonRpcResponse(id: any, result: any) {
-  return { jsonrpc: "2.0", id, result };
-}
+type Tool = (typeof TOOLS)[number];
 
-function jsonRpcError(id: any, code: number, message: string) {
-  return {
-    jsonrpc: "2.0",
-    id,
-    error: { code, message },
+type ToolInputMap = {
+  [T in Tool as T["name"]]: T["inputSchema"]["properties"];
+};
+type ToolCall = {
+  [K in keyof ToolInputMap]: {
+    name: K;
+    args: ToolInputMap[K];
   };
-}
-
-async function apiRequest(
-  env:{workspaceId:string,apiKey:string},
-  method: string,
-  path: string,
-  body: any = null
-) {
-  const url = `https://app.linklyhq.com${path}`;
-
-  const options: RequestInit = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "X-WORKSPACE-ID": env.workspaceId,
-      "X-API-KEY": env.apiKey,
-    },
-  };
-
-  if (body) options.body = JSON.stringify(body);
-  const resp = await fetch(url, options);
-
-  if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Linkly API ${resp.status}: ${text}`);
-  }
-  return resp.json();
+}[keyof ToolInputMap];
+interface Env {
+  workspaceId: string;
+  apiKey: string;
 }
 
 const TOOLS = [
-  {
-    name: "ping",
-    description: "Returns pong",
-    inputSchema: {
-      type: "object",
-      properties: {},
-      required: [],
-    },
-  },
-  {
-    name: "auth",
-    description:
-      "Returns the workspace ID and API key passed through OAuth basic auth.",
-    inputSchema: {
-      type: "object",
-      properties: {},
-      required: [],
-    },
-  },
   {
     name: "create_link",
     description:
@@ -564,7 +521,511 @@ const TOOLS = [
       required: ["link_id", "url"],
     },
   },
-];
+] as const;
+
+function jsonRpcResponse(id: any, result: any) {
+  return { jsonrpc: "2.0", id, result };
+}
+
+function jsonRpcError(id: any, code: number, message: string) {
+  return {
+    jsonrpc: "2.0",
+    id,
+    error: { code, message },
+  };
+}
+
+async function apiRequest(
+  env: { workspaceId: string; apiKey: string },
+  method: RequestInit["method"],
+  path: string,
+  body: any = null
+) {
+  const url = `https://app.linklyhq.com${path}`;
+
+  const options: RequestInit = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "X-WORKSPACE-ID": env.workspaceId,
+      "X-API-KEY": env.apiKey,
+    },
+  };
+
+  if (body) options.body = JSON.stringify(body);
+  const resp = await fetch(url, options);
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`Linkly API ${resp.status}: ${text}`);
+  }
+  return resp.json();
+}
+
+// Handle tool execution
+async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
+  const { workspaceId: WORKSPACE_ID } = env;
+  switch (name) {
+    case "create_link": {
+      const result = await apiRequest(
+        env,
+        "POST",
+        `/api/v1/workspace/${WORKSPACE_ID}/links`,
+        args
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "update_link": {
+      const { link_id, ...updateData } = args;
+
+      const result = await apiRequest(
+        env,
+        "POST",
+        `/api/v1/workspace/${WORKSPACE_ID}/links`,
+        args
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "delete_link": {
+      const result = await apiRequest(
+        env,
+        "DELETE",
+        `/api/v1/workspace/${WORKSPACE_ID}/links/${args.link_id}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "get_link": {
+      const result = await apiRequest(
+        env,
+        "GET",
+        `/api/v1/get_link/${args.link_id}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "list_links": {
+      const result = await apiRequest(
+        env,
+        "GET",
+        `/api/v1/workspace/${WORKSPACE_ID}/links/export`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "get_clicks": {
+      const params = new URLSearchParams();
+      params.append("format", "json");
+      if (args.link_id) params.append("link_id", `${args.link_id}`);
+      const url = `/api/v1/workspace/${WORKSPACE_ID}/clicks/export?${params.toString()}`;
+
+      const result = await apiRequest(env, "GET", url);
+
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "get_analytics": {
+      const params = new URLSearchParams();
+      if (args.start) params.append("start", `${args.start}`);
+      if (args.end) params.append("end", `${args.end}`);
+      if (args.link_id) params.append("link_id", `${args.link_id}`);
+      if (args.frequency) params.append("frequency", `${args.frequency}`);
+      if (args.country) params.append("country", `${args.country}`);
+      if (args.platform) params.append("platform", `${args.platform}`);
+      if (args.browser) params.append("browser", `${args.browser}`);
+      if (args.unique) params.append("unique", `${args.unique}`);
+      if (args.bots) params.append("bots", `${args.bots}`);
+
+      const queryString = params.toString();
+      const url = `/api/v1/workspace/${WORKSPACE_ID}/clicks${
+        queryString ? `?${queryString}` : ""
+      }`;
+      const result = await apiRequest(env, "GET", url);
+
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "get_analytics_by": {
+      const params = new URLSearchParams();
+      params.append("counter", `${args.counter}`);
+      if (args.start) params.append("start", `${args.start}`);
+      if (args.end) params.append("end", `${args.end}`);
+      if (args.link_id) params.append("link_id", `${args.link_id}`);
+      if (args.country) params.append("country", `${args.country}`);
+      if (args.platform) params.append("platform", `${args.platform}`);
+      if (args.unique) params.append("unique", `${args.unique}`);
+      if (args.bots) params.append("bots", `${args.bots}`);
+
+      const url = `/api/v1/workspace/${WORKSPACE_ID}/clicks/counters/${
+        args.counter
+      }?${params.toString()}`;
+      const result = await apiRequest(env, "GET", url);
+
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "export_clicks": {
+      const params = new URLSearchParams();
+      params.append("format", "json");
+      if (args.start) params.append("start", `${args.start}`);
+      if (args.end) params.append("end", `${args.end}`);
+      if (args.link_id) params.append("link_id", `${args.link_id}`);
+      if (args.country) params.append("country", `${args.country}`);
+      if (args.platform) params.append("platform", `${args.platform}`);
+      if (args.bots) params.append("bots", `${args.bots}`);
+
+      const url = `/api/v1/workspace/${WORKSPACE_ID}/clicks/export?${params.toString()}`;
+      const result = await apiRequest(env, "GET", url);
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Domain Management
+    case "list_domains": {
+      const result = await apiRequest(
+        env,
+        "GET",
+        `/api/v1/workspace/${WORKSPACE_ID}/domains`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "create_domain": {
+      const result = await apiRequest(
+        env,
+        "POST",
+        `/api/v1/workspace/${WORKSPACE_ID}/domains`,
+        { name: args.name }
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "delete_domain": {
+      const result = await apiRequest(
+        env,
+        "DELETE",
+        `/api/v1/workspace/${WORKSPACE_ID}/domains/${args.domain_id}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Link Search
+    case "search_links": {
+      const params = new URLSearchParams();
+      params.append("search", `${args.query}`);
+      const result = await apiRequest(
+        env,
+        "GET",
+        `/api/v1/workspace/${WORKSPACE_ID}/links/export?${params.toString()}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Workspace Webhooks
+    case "list_webhooks": {
+      const result = await apiRequest(
+        env,
+        "GET",
+        `/api/v1/workspace/${WORKSPACE_ID}/webhooks`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "subscribe_webhook": {
+      const result = await apiRequest(
+        env,
+        "POST",
+        `/api/v1/workspace/${WORKSPACE_ID}/webhooks`,
+        { url: args.url }
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "unsubscribe_webhook": {
+      const encodedUrl = encodeURIComponent(`${args.url}`);
+      await apiRequest(
+        env,
+        "DELETE",
+        `/api/v1/workspace/${WORKSPACE_ID}/webhooks/${encodedUrl}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ success: true }, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    // Link Webhooks
+    case "list_link_webhooks": {
+      const result = await apiRequest(
+        env,
+        "GET",
+        `/api/v1/link/${args.link_id}/webhooks`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "subscribe_link_webhook": {
+      const result = await apiRequest(
+        env,
+        "POST",
+        `/api/v1/link/${args.link_id}/webhooks`,
+        { url: args.url }
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "unsubscribe_link_webhook": {
+      const encodedUrl = encodeURIComponent(`${args.url}`);
+      await apiRequest(
+        env,
+        "DELETE",
+        `/api/v1/link/${args.link_id}/webhooks/${encodedUrl}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ success: true }, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    default:
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [{ type: "text", text: `Unknown tool: ${name}` }],
+            isError: true,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+  }
+}
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -643,69 +1104,7 @@ export default {
           const name = params?.name;
           const args = params?.arguments || {}; // <-- ADD THIS LINE
 
-          if (name === "ping") {
-            return new Response(
-              JSON.stringify(
-                jsonRpcResponse(id, {
-                  content: [{ type: "text", text: "pong" }],
-                  isError: false,
-                })
-              ),
-              { headers: { "Content-Type": "application/json" } }
-            );
-          }
-          if (name === "auth") {
-            return new Response(
-              JSON.stringify(
-                jsonRpcResponse(id, {
-                  content: [
-                    {
-                      type: "text",
-                      text: `${
-                        request.headers.get("Authorization") || "Empty"
-                      } `,
-                    },
-                  ],
-                  isError: false,
-                })
-              ),
-              { headers: { "Content-Type": "application/json" } }
-            );
-          }
-
-          if (name === "create_link") {
-            const result = await apiRequest(
-              {workspaceId,apiKey},
-              "POST",
-              `/api/v1/workspace/${workspaceId}/links`,
-              args
-            );
-
-            return new Response(
-              JSON.stringify(
-                jsonRpcResponse(id, {
-                  content: [
-                    {
-                      type: "text",
-                      text: JSON.stringify(result, null, 2),
-                    },
-                  ],
-                  isError: false,
-                })
-              ),
-              { headers: { "Content-Type": "application/json" } }
-            );
-          }
-
-          return new Response(
-            JSON.stringify(
-              jsonRpcResponse(id, {
-                content: [{ type: "text", text: `Unknown tool: ${name}` }],
-                isError: true,
-              })
-            ),
-            { headers: { "Content-Type": "application/json" } }
-          );
+          return await handleToolCall(id, { name, args }, env);
         }
 
         // ---- method not found ----
@@ -713,7 +1112,6 @@ export default {
           JSON.stringify(jsonRpcError(id, -32601, "Method not found")),
           { status: 404 }
         );
-
       } catch (e: any) {
         return new Response(
           JSON.stringify(jsonRpcError(id, -32603, "Internal error")),
