@@ -11,7 +11,7 @@ function jsonRpcError(id: any, code: number, message: string) {
 }
 
 async function apiRequest(
-  env: Env,
+  env:{workspaceId:string,apiKey:string},
   method: string,
   path: string,
   body: any = null
@@ -23,8 +23,8 @@ async function apiRequest(
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      "X-WORKSPACE-ID": env.WORKSPACE_ID,
-      "X-API-KEY": env.API_KEY,
+      "X-WORKSPACE-ID": env.workspaceId,
+      "X-API-KEY": env.apiKey,
     },
   };
 
@@ -570,6 +570,9 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
+    const apiKey = url.searchParams.get("apiId");
+    const workspaceId = url.searchParams.get("workspaceId");
+
     // Health check
     if (url.pathname === "/" && request.method === "GET") {
       return new Response("MCP Test Server Running", {
@@ -577,8 +580,15 @@ export default {
       });
     }
 
+    if (!apiKey || !workspaceId) {
+      return new Response(
+        JSON.stringify({ error: "Missing apiId or workspaceId" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
     // MCP endpoint
-    if (url.pathname === "/mcp" && request.method === "POST") {
+    if (request.method === "POST") {
       let body: any;
       try {
         body = await request.json();
@@ -598,9 +608,9 @@ export default {
             JSON.stringify(
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
-                capabilities: { tools: { listChanged: false },auth:{
-                  type:"basic"
-                } },
+                capabilities: {
+                  tools: { listChanged: false },
+                },
                 serverInfo: {
                   name: "mcp-minimal",
                   version: "1.0.0",
@@ -621,7 +631,7 @@ export default {
           return new Response(
             JSON.stringify(
               jsonRpcResponse(id, {
-                tools: TOOLS
+                tools: TOOLS,
               })
             ),
             { headers: { "Content-Type": "application/json" } }
@@ -651,7 +661,9 @@ export default {
                   content: [
                     {
                       type: "text",
-                      text: `${request.headers.get("Authorization")|| "Empty"} `,
+                      text: `${
+                        request.headers.get("Authorization") || "Empty"
+                      } `,
                     },
                   ],
                   isError: false,
@@ -663,9 +675,9 @@ export default {
 
           if (name === "create_link") {
             const result = await apiRequest(
-              env,
+              {workspaceId,apiKey},
               "POST",
-              `/api/v1/workspace/${env.WORKSPACE_ID}/links`,
+              `/api/v1/workspace/${workspaceId}/links`,
               args
             );
 
@@ -701,6 +713,7 @@ export default {
           JSON.stringify(jsonRpcError(id, -32601, "Method not found")),
           { status: 404 }
         );
+
       } catch (e: any) {
         return new Response(
           JSON.stringify(jsonRpcError(id, -32603, "Internal error")),
