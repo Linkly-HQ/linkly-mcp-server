@@ -570,7 +570,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    const apiKey = url.searchParams.get("apiId");
+    const apiKey = url.searchParams.get("apiKey");
     const workspaceId = url.searchParams.get("workspaceId");
 
     // Health check
