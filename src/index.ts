@@ -523,6 +523,8 @@ const TOOLS = [
   },
 ] as const;
 
+let executed = false;
+
 function jsonRpcResponse(id: any, result: any) {
   return { jsonrpc: "2.0", id, result };
 }
@@ -1101,6 +1103,9 @@ export default {
 
         // ---- tools/call ----
         if (method === "tools/call") {
+          if (executed)
+            return new Response(JSON.stringify(jsonRpcResponse(id, {})));
+          executed = true;
           const name = params?.name;
           const args = params?.arguments || {}; // <-- ADD THIS LINE
 
