@@ -582,7 +582,7 @@ export default {
 
     if (!apiKey || !workspaceId) {
       return new Response(
-        JSON.stringify({ error: "Missing apiId or workspaceId" }),
+        JSON.stringify({ error: "Missing api key or workspaceId" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
