@@ -61,7 +61,7 @@ const TOOLS = [
   {
     name: "create_link",
     description:
-      "Create a new Linkly short link. Returns the created link with its short URL.",
+      "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
     inputSchema: {
       type: "object",
       properties: {
