@@ -566,6 +566,7 @@ async function apiRequest(
 // Handle tool execution
 async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
+  console.log("env",env)
   switch (name) {
     case "create_link": {
       const result = await apiRequest(
@@ -1104,7 +1105,7 @@ export default {
           const name = params?.name;
           const args = params?.arguments || {}; // <-- ADD THIS LINE
 
-          return await handleToolCall(id, { name, args }, env);
+          return await handleToolCall(id, { name, args }, {apiKey,workspaceId});
         }
 
         // ---- method not found ----
@@ -1113,6 +1114,7 @@ export default {
           { status: 404 }
         );
       } catch (e: any) {
+        console.log(e)
         return new Response(
           JSON.stringify(jsonRpcError(id, -32603, "Internal error")),
           { status: 500 }
