@@ -570,7 +570,8 @@ async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
   console.log("env", env);
   console.log(name)
-  console.log(JSON.stringify(args))
+  //@ts-ignore
+  console.log(args.url)
   switch (name) {
     case "create_link": {
       const result = await apiRequest(
