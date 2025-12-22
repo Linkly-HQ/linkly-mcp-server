@@ -568,10 +568,6 @@ async function apiRequest(
 // Handle tool execution
 async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
-  console.log("env", env);
-  console.log(name)
-  //@ts-ignore
-  console.log(args.url)
   switch (name) {
     case "create_link": {
       const result = await apiRequest(
@@ -1039,8 +1035,6 @@ export default {
 
     const apiKey = url.searchParams.get("apiKey");
     const workspaceId = url.searchParams.get("workspaceId");
-    console.log("apiKey")
-    console.log(apiKey)
 
     // Health check
     if (url.pathname === "/" && request.method === "GET") {
@@ -1110,7 +1104,7 @@ export default {
         // ---- tools/call ----
         if (method === "tools/call") {
           const name = params?.name;
-          const args = params?.arguments || {};
+          const args = params?.args || {};
 
           return await handleToolCall(
             id,
