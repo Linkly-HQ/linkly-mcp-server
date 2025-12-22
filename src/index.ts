@@ -14,8 +14,6 @@ interface Env {
   apiKey: string;
 }
 
-
-
 const TOOLS = [
   {
     name: "create_link",
@@ -535,6 +533,19 @@ function jsonRpcError(id: any, code: number, message: string) {
     id,
     error: { code, message },
   };
+}
+
+function isJsonRpc(body: any): boolean {
+  return (
+    body &&
+    typeof body === "object" &&
+    body.jsonrpc === "2.0" &&
+    typeof body.method === "string" &&
+    (body.id === undefined ||
+      body.id === null ||
+      typeof body.id === "string" ||
+      typeof body.id === "number")
+  );
 }
 
 async function apiRequest(
@@ -1063,6 +1074,11 @@ export default {
       }
 
       const { id, method, params } = body;
+      if (!isJsonRpc(body)) {
+        return new Response(
+          JSON.stringify(jsonRpcError(id, -32600, "Invalid JSON-RPC request"))
+        );
+      }
 
       try {
         // ---- initialize ----
