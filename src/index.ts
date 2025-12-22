@@ -602,7 +602,7 @@ async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
             content: [
               {
                 type: "text",
-                text: `Hello , its working fine with message : ${message}`,
+                text: `Hello , its working fine with message : ${JSON.stringify(args)}`,
               },
             ],
             isError: false,
