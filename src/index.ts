@@ -16,18 +16,18 @@ interface Env {
 
 const TOOLS = [
   {
-    name:"ping",
-    description:"a ping to test if this tool works or not",
-    inputSchema:{
-       type:"object",
-       properties:{
-        message:{
-          type:"string",
-          description:"a message to ping , default to User"
-        }
-       },
-       required:["message"]
-    }
+    name: "ping",
+    description: "a ping to test if this tool works or not",
+    inputSchema: {
+      type: "object",
+      properties: {
+        message: {
+          type: "string",
+          description: "a message to ping , default to User",
+        },
+      },
+      required: ["message"],
+    },
   },
   {
     name: "create_link",
@@ -594,15 +594,17 @@ async function apiRequest(
 async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
   switch (name) {
-    case "ping":{
-      const {message} = args
+    case "ping": {
+      const { message } = args;
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
             content: [
               {
                 type: "text",
-                text: `Hello , its working fine with message : ${JSON.stringify(args)}`,
+                text: `Hello , its working fine with message : ${JSON.stringify(
+                  args
+                )}`,
               },
             ],
             isError: false,
@@ -1166,6 +1168,25 @@ export default {
         if (method === "tools/call") {
           const name = params?.name;
           const args = params?.args || {};
+
+          if (name === "ping") {
+            return new Response(
+              JSON.stringify(
+                jsonRpcResponse(id, {
+                  content: [
+                    {
+                      type: "text",
+                      text: `Hellooo , its working fine with message : ${JSON.stringify(
+                        args
+                      )}`,
+                    },
+                  ],
+                  isError: false,
+                })
+              ),
+              { headers: { "Content-Type": "application/json" } }
+            );
+          }
 
           return await handleToolCall(
             id,
