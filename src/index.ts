@@ -594,14 +594,20 @@ async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
   switch (name) {
     case "ping":{
-      return new Response(JSON.stringify(jsonRpcResponse(id,{
-        content:[
-          {
-            type:"text",
-            text:"Hello , its working"
-          }
-        ]
-      })))
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: "Hello , its working fine",
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
     }
     case "create_link": {
       const result = await apiRequest(
