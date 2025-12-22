@@ -594,13 +594,14 @@ async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
   switch (name) {
     case "ping":{
+      const {message} = args
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
             content: [
               {
                 type: "text",
-                text: "Hello , its working fine",
+                text: `Hello , its working fine with message : ${message}`,
               },
             ],
             isError: false,
