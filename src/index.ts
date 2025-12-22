@@ -1076,7 +1076,7 @@ export default {
       const { id, method, params } = body;
       if (!isJsonRpc(body)) {
         return new Response(
-          JSON.stringify(jsonRpcError(id, -32600, "Invalid JSON-RPC request"))
+          JSON.stringify(jsonRpcError(null, -32600, "Invalid JSON-RPC request"))
         );
       }
 
