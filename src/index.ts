@@ -25,7 +25,8 @@ const TOOLS = [
           type:"string",
           description:"a message to ping , default to User"
         }
-       }
+       },
+       required:["message"]
     }
   },
   {
