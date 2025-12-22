@@ -1177,7 +1177,7 @@ export default {
                     {
                       type: "text",
                       text: `Hellooo , its working fine with message : ${JSON.stringify(
-                        args
+                        params
                       )}`,
                     },
                   ],
