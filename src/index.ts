@@ -16,6 +16,19 @@ interface Env {
 
 const TOOLS = [
   {
+    name:"ping",
+    description:"a ping to test if this tool works or not",
+    inputSchema:{
+       type:"object",
+       properties:{
+        message:{
+          type:"string",
+          description:"a message to ping , default to User"
+        }
+       }
+    }
+  },
+  {
     name: "create_link",
     description:
       "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
@@ -580,6 +593,16 @@ async function apiRequest(
 async function handleToolCall(id: string, { name, args }: ToolCall, env: Env) {
   const { workspaceId: WORKSPACE_ID } = env;
   switch (name) {
+    case "ping":{
+      return new Response(JSON.stringify(jsonRpcResponse(id,{
+        content:[
+          {
+            type:"text",
+            text:"Hello , its working"
+          }
+        ]
+      })))
+    }
     case "create_link": {
       const result = await apiRequest(
         env,
