@@ -1036,6 +1036,8 @@ export default {
 
     const apiKey = url.searchParams.get("apiKey");
     const workspaceId = url.searchParams.get("workspaceId");
+    console.log("apiKey")
+    console.log(apiKey)
 
     // Health check
     if (url.pathname === "/" && request.method === "GET") {
