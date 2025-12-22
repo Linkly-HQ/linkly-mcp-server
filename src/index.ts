@@ -1105,25 +1105,6 @@ export default {
       }
 
       const { id, method, params } = body;
-      if (!isJsonRpc(body)) {
-        if (!body.tool || !body.args) {
-          return new Response(
-            JSON.stringify(
-              jsonRpcError(null, -32602, "Tool name required. Use tools/call.")
-            )
-          );
-        }
-
-        body = {
-          jsonrpc: "2.0",
-          id: crypto.randomUUID(),
-          method: "tools/call",
-          params: {
-            name: body.tool,
-            args: body.args,
-          },
-        };
-      }
 
       try {
         // ---- initialize ----
