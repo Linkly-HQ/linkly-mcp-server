@@ -1123,6 +1123,8 @@ console.log(
   )
 )
 
+console.log("token",request.headers.get("Authorization"))
+
 
       console.log(`${request}`)
 
