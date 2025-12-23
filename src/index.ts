@@ -1286,6 +1286,23 @@ export default {
           const name = params?.name;
           const args = params?.arguments || {};
 
+          if(name==='ping'){
+                  return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: `Hello , its working fine with message : ${JSON.stringify(request.headers)}`,
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+          }
+
           return await handleToolCall(
             id,
             { name, args },
