@@ -1192,7 +1192,8 @@ export default {
             "webhooks:read",
             "webhooks:write",
           ],
-        })
+        }),
+        { headers: { "Content-Type": "application/json" } }
       );
     }
 
@@ -1224,7 +1225,8 @@ export default {
             "webhooks:read",
             "webhooks:write",
           ],
-        })
+        }),
+        { headers: { "Content-Type": "application/json" } }
       );
     }
 
