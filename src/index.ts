@@ -1109,6 +1109,8 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
       console.log("headers",url)
+      console.log(`${url.origin}/oauth/callback`,`${request}`)
+      console.log(`${request}`)
 
     // OAuth callback endpoint
     if (url.pathname === "/oauth/callback" && request.method === "GET") {
