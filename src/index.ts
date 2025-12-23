@@ -624,15 +624,15 @@ async function handleToolCall(
   switch (name) {
     case "ping": {
       // Check authentication
-      if (!isAuthenticated(oauthState)) {
-        return new Response(
-          JSON.stringify(jsonRpcError(id, -32002, "Authentication required")),
-          {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
+      // if (!isAuthenticated(oauthState)) {
+      //   return new Response(
+      //     JSON.stringify(jsonRpcError(id, -32002, "Authentication required")),
+      //     {
+      //       status: 401,
+      //       headers: { "Content-Type": "application/json" },
+      //     }
+      //   );
+      // }
       const { message } = args;
       return new Response(
         JSON.stringify(
@@ -1262,7 +1262,13 @@ export default {
                     tokenUrl: "https://app.linklyhq.com/oauth/token",
                     revocationUrl: "https://app.linklyhq.com/oauth/revoke",
                     scopes: {
-                      full_access: "Provides Full access to apis",
+                      "links:read": "Read link information",
+                      "links:write": "Create and modify links",
+                      "analytics:read": "Read analytics data",
+                      "domains:read": "Read domain information",
+                      "domains:write": "Manage domains",
+                      "webhooks:read": "Read webhook configurations",
+                      "webhooks:write": "Manage webhooks",
                     },
                   },
                   tools: { listChanged: false },
