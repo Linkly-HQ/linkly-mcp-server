@@ -25,6 +25,9 @@ const TOOLS = [
   {
     name: "ping",
     description: "Health check",
+    annotations: {
+    visibility: "public",
+  },
     inputSchema: {
       type: "object",
       properties: {
