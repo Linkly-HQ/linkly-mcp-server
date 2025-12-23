@@ -1254,6 +1254,17 @@ export default {
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
                 capabilities: {
+                  authorization: {
+                    type: "oauth2",
+                    flow: "authorization_code",
+                    authorizationUrl:
+                      "https://app.linklyhq.com/oauth/authorize",
+                    tokenUrl: "https://app.linklyhq.com/oauth/token",
+                    revocationUrl: "https://app.linklyhq.com/oauth/revoke",
+                    scopes: {
+                      full_access: "Provides Full access to apis",
+                    },
+                  },
                   tools: { listChanged: false },
                 },
                 serverInfo: {
