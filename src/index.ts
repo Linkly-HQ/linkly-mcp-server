@@ -1183,15 +1183,7 @@ export default {
         JSON.stringify({
           resource: "https://app.linklyhq.com",
           authorization_servers: ["https://app.linklyhq.com"],
-          scopes_supported: [
-            "links:read",
-            "links:write",
-            "analytics:read",
-            "domains:read",
-            "domains:write",
-            "webhooks:read",
-            "webhooks:write",
-          ],
+          scopes_supported: ["full_access"],
         }),
         { headers: { "Content-Type": "application/json" } }
       );
@@ -1216,15 +1208,7 @@ export default {
             "client_secret_basic",
           ],
 
-          scopes_supported: [
-            "links:read",
-            "links:write",
-            "analytics:read",
-            "domains:read",
-            "domains:write",
-            "webhooks:read",
-            "webhooks:write",
-          ],
+          scopes_supported: ["full_access"],
         }),
         { headers: { "Content-Type": "application/json" } }
       );
