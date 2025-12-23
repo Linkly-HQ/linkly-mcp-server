@@ -1198,7 +1198,7 @@ export default {
     }
 
     if (
-      url.pathname === ".well-known/oauth-authorization-server" &&
+      url.pathname === "/.well-known/oauth-authorization-server" &&
       request.method === "GET"
     ) {
       return new Response(
