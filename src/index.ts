@@ -1243,7 +1243,8 @@ export default {
       }
 
       const { id, method, params } = body;
-
+      console.log("params")
+      console.log(params)
       try {
         const oauthState = getOAuthState(params);
         // ---- initialize ----
