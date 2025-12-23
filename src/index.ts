@@ -636,7 +636,7 @@ async function handleToolCall(
             content: [
               {
                 type: "text",
-                text: `Hello , its working fine with message : ${message}`,
+                text: `Hellooooo , its working fine with message : ${JSON.stringify(oauthState)}`,
               },
             ],
             isError: false,
@@ -1286,23 +1286,6 @@ export default {
         if (method === "tools/call") {
           const name = params?.name;
           const args = params?.arguments || {};
-
-          if(name==='ping'){
-                  return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: `Helloooo , its working fine with message : ${JSON.stringify(request.headers)}`,
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
-          }
 
           return await handleToolCall(
             id,
