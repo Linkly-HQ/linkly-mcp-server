@@ -1254,23 +1254,6 @@ export default {
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
                 capabilities: {
-                  authorization: {
-                    type: "oauth2",
-                    flow: "authorization_code",
-                    authorizationUrl:
-                      "https://app.linklyhq.com/oauth/authorize",
-                    tokenUrl: "https://app.linklyhq.com/oauth/token",
-                    revocationUrl: "https://app.linklyhq.com/oauth/revoke",
-                    scopes: {
-                      "links:read": "Read link information",
-                      "links:write": "Create and modify links",
-                      "analytics:read": "Read analytics data",
-                      "domains:read": "Read domain information",
-                      "domains:write": "Manage domains",
-                      "webhooks:read": "Read webhook configurations",
-                      "webhooks:write": "Manage webhooks",
-                    },
-                  },
                   tools: { listChanged: false },
                 },
                 serverInfo: {
