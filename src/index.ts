@@ -9,10 +9,6 @@ type ToolCall = {
     args: ToolInputMap[K];
   };
 }[keyof ToolInputMap];
-interface Env {
-  workspaceId: string;
-  apiKey: string;
-}
 
 interface OAuthState {
   accessToken?: string;
@@ -25,15 +21,12 @@ const TOOLS = [
   {
     name: "ping",
     description: "Health check",
-    annotations: {
-    visibility: "public",
-  },
     inputSchema: {
       type: "object",
       properties: {
         message: {
           type: "string",
-          description: "a message to ping , default to User",
+          description: "a message to ping , default to Winter is here 🐺❄️",
         },
       },
       required: ["message"],
@@ -620,10 +613,10 @@ async function apiRequest(
 async function handleToolCall(
   id: string,
   { name, args }: ToolCall,
-  env: Env,
+  env: {apiKey:string;workspaceId:string},
   oauthState: OAuthState | null
 ) {
-  const { workspaceId: WORKSPACE_ID } = env;
+  // const { workspaceId: WORKSPACE_ID } = env;
   switch (name) {
     case "ping": {
       // Check authentication
@@ -1142,8 +1135,8 @@ export default {
               code,
               redirect_uri: `${url.origin}/oauth/callback`,
               // Add your client_id and client_secret here
-              client_id: "linkly_openai_90af9feccbc6496e",
-              client_secret: "6J1Wmr8NAnt7Jdf21PUdkJrNK4sX42NQy5V3k9xE",
+              client_id: env.LINKLY_CLIENT_ID,
+              client_secret: env.LINKLY_CLIENT_SECRET
             }),
           }
         );
@@ -1259,23 +1252,6 @@ export default {
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
                 capabilities: {
-                  authorization: {
-                    type: "oauth2",
-                    flow: "authorization_code",
-                    authorizationUrl:
-                      "https://app.linklyhq.com/oauth/authorize",
-                    tokenUrl: "https://app.linklyhq.com/oauth/token",
-                    revocationUrl: "https://app.linklyhq.com/oauth/revoke",
-                    scopes: {
-                      "links:read": "Read link information",
-                      "links:write": "Create and modify links",
-                      "analytics:read": "Read analytics data",
-                      "domains:read": "Read domain information",
-                      "domains:write": "Manage domains",
-                      "webhooks:read": "Read webhook configurations",
-                      "webhooks:write": "Manage webhooks",
-                    },
-                  },
                   tools: { listChanged: false },
                 },
                 serverInfo: {
