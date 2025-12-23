@@ -1108,6 +1108,7 @@ async function handleToolCall(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+      console.log("headers",JSON.stringify(request.headers),JSON.stringify(request))
 
     // OAuth callback endpoint
     if (url.pathname === "/oauth/callback" && request.method === "GET") {
