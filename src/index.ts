@@ -1140,7 +1140,7 @@ export default {
               redirect_uri: `${url.origin}/oauth/callback`,
               // Add your client_id and client_secret here
               client_id: "linkly_openai_90af9feccbc6496e",
-              client_secret: "6J1Wmr8NAnt7Jdf21PUdkJrNK4sX42NQy5V3k9xE"
+              client_secret: "6J1Wmr8NAnt7Jdf21PUdkJrNK4sX42NQy5V3k9xE",
             }),
           }
         );
@@ -1173,6 +1173,59 @@ export default {
           headers: { "Content-Type": "application/json" },
         });
       }
+    }
+
+    if (
+      url.pathname === "/.well-known/oauth-protected-resource" &&
+      request.method === "GET"
+    ) {
+      return new Response(
+        JSON.stringify({
+          resource: "https://app.linklyhq.com",
+          authorization_servers: ["https://app.linklyhq.com"],
+          scopes_supported: [
+            "links:read",
+            "links:write",
+            "analytics:read",
+            "domains:read",
+            "domains:write",
+            "webhooks:read",
+            "webhooks:write",
+          ],
+        })
+      );
+    }
+
+    if (
+      url.pathname === ".well-known/oauth-authorization-server" &&
+      request.method === "GET"
+    ) {
+      return new Response(
+        JSON.stringify({
+          issuer: "https://app.linklyhq.com",
+          authorization_endpoint: "https://app.linklyhq.com/oauth/authorize",
+          token_endpoint: "https://app.linklyhq.com/oauth/token",
+          revocation_endpoint: "https://app.linklyhq.com/oauth/revoke",
+
+          response_types_supported: ["code"],
+          grant_types_supported: ["authorization_code"],
+
+          token_endpoint_auth_methods_supported: [
+            "client_secret_post",
+            "client_secret_basic",
+          ],
+
+          scopes_supported: [
+            "links:read",
+            "links:write",
+            "analytics:read",
+            "domains:read",
+            "domains:write",
+            "webhooks:read",
+            "webhooks:write",
+          ],
+        })
+      );
     }
 
     const apiKey = url.searchParams.get("apiKey");
