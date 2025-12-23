@@ -17,7 +17,7 @@ interface Env {
 const TOOLS = [
   {
     name: "ping",
-    description: "a ping to test if this tool works or not",
+    description: "Health check",
     inputSchema: {
       type: "object",
       properties: {
@@ -1114,10 +1114,20 @@ export default {
               jsonRpcResponse(id, {
                 protocolVersion: "2024-11-05",
                 capabilities: {
+                  authorization:{
+                    type:"oauth2",
+                    flow:"authorization_code",
+                    authorizationUrl:"https://app.linklyhq.com/oauth/authorize",
+                    tokenUrl:"https://app.linklyhq.com/oauth/token",
+                    revocationUrl:"https://app.linklyhq.com/oauth/revoke",
+                    scopes:{
+
+                    }
+                  },
                   tools: { listChanged: false },
                 },
                 serverInfo: {
-                  name: "mcp-minimal",
+                  name: "linkly",
                   version: "1.0.0",
                 },
               })
@@ -1147,25 +1157,6 @@ export default {
         if (method === "tools/call") {
           const name = params?.name;
           const args = params?.arguments || {};
-
-          // if (name === "ping") {
-          //   return new Response(
-          //     JSON.stringify(
-          //       jsonRpcResponse(id, {
-          //         content: [
-          //           {
-          //             type: "text",
-          //             text: `Hellooo , its working fine with message : ${JSON.stringify(
-          //               params
-          //             )}`,
-          //           },
-          //         ],
-          //         isError: false,
-          //       })
-          //     ),
-          //     { headers: { "Content-Type": "application/json" } }
-          //   );
-          // }
 
           return await handleToolCall(
             id,
