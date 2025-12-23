@@ -1110,6 +1110,12 @@ export default {
     const url = new URL(request.url);
       console.log("headers",url)
       console.log(`${url.origin}/oauth/callbacks`,`${JSON.stringify(Object.keys(request))}`)
+      console.log({
+  method: request.method,
+  url: request.url,
+  headers: Object.fromEntries(request.headers),
+})
+
       console.log(`${request}`)
 
     // OAuth callback endpoint
