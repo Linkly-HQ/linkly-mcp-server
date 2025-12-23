@@ -613,7 +613,7 @@ async function apiRequest(
 async function handleToolCall(
   id: string,
   { name, args }: ToolCall,
-  env: {apiKey:string;workspaceId:string},
+  env: { apiKey: string; workspaceId: string },
   oauthState: OAuthState | null
 ) {
   // const { workspaceId: WORKSPACE_ID } = env;
@@ -636,7 +636,9 @@ async function handleToolCall(
             content: [
               {
                 type: "text",
-                text: `Hellooooo , its working fine with message : ${JSON.stringify(oauthState)}`,
+                text: `Hellooooo , its working fine with message : ${JSON.stringify(
+                  oauthState
+                )}`,
               },
             ],
             isError: false,
@@ -1108,25 +1110,27 @@ async function handleToolCall(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-      console.log("headers",url)
-      console.log(`${url.origin}/oauth/callbacks`,`${JSON.stringify(Object.keys(request))}`)
-console.log(
-  "oauth callback",
-  JSON.stringify(
-    {
-      method: request.method,
-      url: request.url,
-      headers: Object.fromEntries(request.headers),
-    },
-    null,
-    2
-  )
-)
+    console.log("headers", url);
+    console.log(
+      `${url.origin}/oauth/callbacks`,
+      `${JSON.stringify(Object.keys(request))}`
+    );
+    console.log(
+      "oauth callback",
+      JSON.stringify(
+        {
+          method: request.method,
+          url: request.url,
+          headers: Object.fromEntries(request.headers),
+        },
+        null,
+        2
+      )
+    );
 
-console.log("token",request.headers.get("Authorization"))
+    console.log("token", request.headers.get("Authorization"));
 
-
-      console.log(`${request}`)
+    console.log(`${request}`);
 
     // OAuth callback endpoint
     if (url.pathname === "/oauth/callback" && request.method === "GET") {
@@ -1155,7 +1159,7 @@ console.log("token",request.headers.get("Authorization"))
               redirect_uri: `${url.origin}/oauth/callback`,
               // Add your client_id and client_secret here
               client_id: env.LINKLY_CLIENT_ID,
-              client_secret: env.LINKLY_CLIENT_SECRET
+              client_secret: env.LINKLY_CLIENT_SECRET,
             }),
           }
         );
@@ -1230,7 +1234,7 @@ console.log("token",request.headers.get("Authorization"))
     }
 
     const apiKey = url.searchParams.get("apiKey") || "";
-    const workspaceId = url.searchParams.get("workspaceId")|| "";
+    const workspaceId = url.searchParams.get("workspaceId") || "";
 
     // Health check
     if (url.pathname === "/" && request.method === "GET") {
@@ -1238,8 +1242,6 @@ console.log("token",request.headers.get("Authorization"))
         status: 200,
       });
     }
-
-    
 
     // if (!apiKey || !workspaceId) {
     //   return new Response(
@@ -1261,8 +1263,8 @@ console.log("token",request.headers.get("Authorization"))
       }
 
       const { id, method, params } = body;
-      console.log("params")
-      console.log(params)
+      console.log("params");
+      console.log(params);
       try {
         const oauthState = getOAuthState(params);
         // ---- initialize ----
