@@ -1217,8 +1217,8 @@ export default {
       );
     }
 
-    const apiKey = url.searchParams.get("apiKey");
-    const workspaceId = url.searchParams.get("workspaceId");
+    const apiKey = url.searchParams.get("apiKey") || "";
+    const workspaceId = url.searchParams.get("workspaceId")|| "";
 
     // Health check
     if (url.pathname === "/" && request.method === "GET") {
@@ -1227,12 +1227,14 @@ export default {
       });
     }
 
-    if (!apiKey || !workspaceId) {
-      return new Response(
-        JSON.stringify({ error: "Missing api key or workspaceId" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
-    }
+    
+
+    // if (!apiKey || !workspaceId) {
+    //   return new Response(
+    //     JSON.stringify({ error: "Missing api key or workspaceId" }),
+    //     { status: 400, headers: { "Content-Type": "application/json" } }
+    //   );
+    // }
 
     // MCP endpoint
     if (request.method === "POST") {
