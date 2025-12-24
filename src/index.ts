@@ -739,16 +739,16 @@ async function handleToolCall(
       );
     }
     case "list_links": {
-      const workspaceID = await apiRequest(
-        token,
-        "GET",
-        "/api/v1/workspaces",
-        args
-      );
+      // const workspaceID = await apiRequest(
+      //   token,
+      //   "GET",
+      //   "/api/v1/workspaces",
+      //   args
+      // );
       const result = await apiRequest(
         token,
         "GET",
-        `/api/v1/workspace/${workspaceID}/links/export`
+        `/api/v1/workspace/245765/links/export`
       );
       return new Response(
         JSON.stringify(
