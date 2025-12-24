@@ -19,6 +19,15 @@ interface OAuthState {
 
 const TOOLS = [
   {
+    name: "get_workspace",
+    description: "Return details of authenticated workspace",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
     name: "ping",
     description: "Health check",
     inputSchema: {
@@ -723,6 +732,23 @@ async function handleToolCall(
         "GET",
         `/api/v1/get_link/${args.link_id}`
       );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "get_workspace": {
+      const result = await apiRequest(token, "GET", `/api/v1/workspaces`);
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
