@@ -656,8 +656,8 @@ async function handleToolCall(
             content: [
               {
                 type: "text",
-                
-                text: `Create Link ${workspaceID.length}`,
+                //@ts-ignore
+                text: `Create Link ${workspaceID.length} ${workspaceID[0].id}`,
               },
             ],
             isError: false,
