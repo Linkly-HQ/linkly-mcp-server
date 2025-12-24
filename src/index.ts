@@ -594,7 +594,7 @@ async function apiRequest(
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      Authorization: token,
+      Authorization: "Bearer anmlWp2acDAKZgdaYEyT_4qK1af-rs4TA9Tq1jseg9I",
     },
   };
 
