@@ -640,19 +640,19 @@ async function handleToolCall(
         "/api/v1/workspaces",
         args
       );
-      const result = await apiRequest(
-        token,
-        "POST",
-        `/api/v1/workspace/${workspaceID}/links`,
-        args
-      );
+      // const result = await apiRequest(
+      //   token,
+      //   "POST",
+      //   `/api/v1/workspace/${workspaceID}/links`,
+      //   args
+      // );
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
             content: [
               {
                 type: "text",
-                text: JSON.stringify(result, null, 2),
+                text: JSON.stringify(workspaceID, null, 2),
               },
             ],
             isError: false,
