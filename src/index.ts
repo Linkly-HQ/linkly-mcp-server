@@ -1400,7 +1400,7 @@ export default {
                   content: [
                     {
                       type: "text",
-                      text: `Hello , its working fine withhh message : FOUND IT ${workspaceID.length}`,
+                      text: `Hello , its working fine withhh message : FOUND IT `,
                     },
                   ],
                   isError: false,
