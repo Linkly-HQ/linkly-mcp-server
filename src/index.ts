@@ -656,7 +656,7 @@ async function handleToolCall(
             content: [
               {
                 type: "text",
-                text: JSON.stringify(workspaceID, null, 2),
+                text: "Create Link",
               },
             ],
             isError: false,
