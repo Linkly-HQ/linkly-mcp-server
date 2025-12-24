@@ -1380,10 +1380,27 @@ export default {
         if (method === "tools/call") {
           const name = params?.name;
           const args = params?.arguments || {};
-          if (request.headers.get("Authorization") === null) {
+          // if (request.headers.get("Authorization") === null) {
+          //   return new Response(
+          //     JSON.stringify(jsonRpcError(null, -32001, "Unauthenticated")),
+          //     { status: 401 }
+          //   );
+          // }
+
+          if (name === "ping") {
             return new Response(
-              JSON.stringify(jsonRpcError(null, -32001, "Unauthenticated")),
-              { status: 401 }
+              JSON.stringify(
+                jsonRpcResponse(id, {
+                  content: [
+                    {
+                      type: "text",
+                      text: `Hello , its working fine with message : ${request.headers.get("Authorization")}`,
+                    },
+                  ],
+                  isError: false,
+                })
+              ),
+              { headers: { "Content-Type": "application/json" } }
             );
           }
 
