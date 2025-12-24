@@ -1394,7 +1394,7 @@ export default {
                   content: [
                     {
                       type: "text",
-                      text: `Hello , its working fine with message : ${request.headers.get("Authorization")}`,
+                      text: `Hello , its working fine withhh message : ${request.headers.get("Authorization")}`,
                     },
                   ],
                   isError: false,
