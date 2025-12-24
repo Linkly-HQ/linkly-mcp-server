@@ -643,21 +643,25 @@ async function handleToolCall(
       );
     }
     case "create_link": {
-      const workspaceID = await apiRequest(token, "GET", `/api/v1/workspaces`) as [];
-      // const result = await apiRequest(
-      //   token,
-      //   "POST",
-      //   `/api/v1/workspace/${workspaceID}/links`,
-      //   args
-      // );
+      const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
+      const result = await apiRequest(
+        token,
+        "POST",
+        `/api/v1/workspace/${workspaceID[0].id}/links`,
+        args
+      );
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
             content: [
               {
                 type: "text",
-                //@ts-ignore
-                text: `Create Link ${workspaceID.length} ${workspaceID[0].id}`,
+
+                text: JSON.stringify(result, null, 2),
               },
             ],
             isError: false,
@@ -668,16 +672,15 @@ async function handleToolCall(
     }
     case "update_link": {
       const { link_id, ...updateData } = args;
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "POST",
-        `/api/v1/workspace/${workspaceID}/links`,
+        `/api/v1/workspace/${workspaceID[0].id}/links`,
         args
       );
       return new Response(
@@ -696,16 +699,15 @@ async function handleToolCall(
       );
     }
     case "delete_link": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "DELETE",
-        `/api/v1/workspace/${workspaceID}/links/${args.link_id}`
+        `/api/v1/workspace/${workspaceID[0].id}/links/${args.link_id}`
       );
       return new Response(
         JSON.stringify(
@@ -761,16 +763,15 @@ async function handleToolCall(
       );
     }
     case "list_links": {
-      // const workspaceID = await apiRequest(
-      //   token,
-      //   "GET",
-      //   "/api/v1/workspaces",
-      //   args
-      // );
+      const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "GET",
-        `/api/v1/workspace/245765/links/export`
+        `/api/v1/workspace/${workspaceID[0].id}/links/export`
       );
       return new Response(
         JSON.stringify(
@@ -789,15 +790,16 @@ async function handleToolCall(
     }
     case "get_clicks": {
       const params = new URLSearchParams();
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       params.append("format", "json");
       if (args.link_id) params.append("link_id", `${args.link_id}`);
-      const url = `/api/v1/workspace/${workspaceID}/clicks/export?${params.toString()}`;
+      const url = `/api/v1/workspace/${
+        workspaceID[0].id
+      }/clicks/export?${params.toString()}`;
 
       const result = await apiRequest(token, "GET", url);
 
@@ -818,12 +820,11 @@ async function handleToolCall(
     }
     case "get_analytics": {
       const params = new URLSearchParams();
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       if (args.start) params.append("start", `${args.start}`);
       if (args.end) params.append("end", `${args.end}`);
       if (args.link_id) params.append("link_id", `${args.link_id}`);
@@ -835,7 +836,7 @@ async function handleToolCall(
       if (args.bots) params.append("bots", `${args.bots}`);
 
       const queryString = params.toString();
-      const url = `/api/v1/workspace/${workspaceID}/clicks${
+      const url = `/api/v1/workspace/${workspaceID[0].id}/clicks${
         queryString ? `?${queryString}` : ""
       }`;
       const result = await apiRequest(token, "GET", url);
@@ -857,12 +858,11 @@ async function handleToolCall(
     }
     case "get_analytics_by": {
       const params = new URLSearchParams();
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       params.append("counter", `${args.counter}`);
       if (args.start) params.append("start", `${args.start}`);
       if (args.end) params.append("end", `${args.end}`);
@@ -872,7 +872,7 @@ async function handleToolCall(
       if (args.unique) params.append("unique", `${args.unique}`);
       if (args.bots) params.append("bots", `${args.bots}`);
 
-      const url = `/api/v1/workspace/${workspaceID}/clicks/counters/${
+      const url = `/api/v1/workspace/${workspaceID[0].id}/clicks/counters/${
         args.counter
       }?${params.toString()}`;
       const result = await apiRequest(token, "GET", url);
@@ -894,12 +894,11 @@ async function handleToolCall(
     }
     case "export_clicks": {
       const params = new URLSearchParams();
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       params.append("format", "json");
       if (args.start) params.append("start", `${args.start}`);
       if (args.end) params.append("end", `${args.end}`);
@@ -908,7 +907,9 @@ async function handleToolCall(
       if (args.platform) params.append("platform", `${args.platform}`);
       if (args.bots) params.append("bots", `${args.bots}`);
 
-      const url = `/api/v1/workspace/${workspaceID}/clicks/export?${params.toString()}`;
+      const url = `/api/v1/workspace/${
+        workspaceID[0].id
+      }/clicks/export?${params.toString()}`;
       const result = await apiRequest(token, "GET", url);
       return new Response(
         JSON.stringify(
@@ -928,16 +929,15 @@ async function handleToolCall(
 
     // Domain Management
     case "list_domains": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "GET",
-        `/api/v1/workspace/${workspaceID}/domains`
+        `/api/v1/workspace/${workspaceID[0].id}/domains`
       );
       return new Response(
         JSON.stringify(
@@ -955,16 +955,15 @@ async function handleToolCall(
       );
     }
     case "create_domain": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "POST",
-        `/api/v1/workspace/${workspaceID}/domains`,
+        `/api/v1/workspace/${workspaceID[0].id}/domains`,
         { name: args.name }
       );
       return new Response(
@@ -983,16 +982,15 @@ async function handleToolCall(
       );
     }
     case "delete_domain": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "DELETE",
-        `/api/v1/workspace/${workspaceID}/domains/${args.domain_id}`
+        `/api/v1/workspace/${workspaceID[0].id}/domains/${args.domain_id}`
       );
       return new Response(
         JSON.stringify(
@@ -1012,18 +1010,19 @@ async function handleToolCall(
 
     // Link Search
     case "search_links": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const params = new URLSearchParams();
       params.append("search", `${args.query}`);
       const result = await apiRequest(
         token,
         "GET",
-        `/api/v1/workspace/${workspaceID}/links/export?${params.toString()}`
+        `/api/v1/workspace/${
+          workspaceID[0].id
+        }/links/export?${params.toString()}`
       );
       return new Response(
         JSON.stringify(
@@ -1043,16 +1042,15 @@ async function handleToolCall(
 
     // Workspace Webhooks
     case "list_webhooks": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "GET",
-        `/api/v1/workspace/${workspaceID}/webhooks`
+        `/api/v1/workspace/${workspaceID[0].id}/webhooks`
       );
       return new Response(
         JSON.stringify(
@@ -1070,16 +1068,15 @@ async function handleToolCall(
       );
     }
     case "subscribe_webhook": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const result = await apiRequest(
         token,
         "POST",
-        `/api/v1/workspace/${workspaceID}/webhooks`,
+        `/api/v1/workspace/${workspaceID[0].id}/webhooks`,
         { url: args.url }
       );
       return new Response(
@@ -1098,17 +1095,16 @@ async function handleToolCall(
       );
     }
     case "unsubscribe_webhook": {
-      const workspaceID = await apiRequest(
+      const workspaceID = (await apiRequest(
         token,
         "GET",
-        "/api/v1/workspaces",
-        args
-      );
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
       const encodedUrl = encodeURIComponent(`${args.url}`);
       await apiRequest(
         token,
         "DELETE",
-        `/api/v1/workspace/${workspaceID}/webhooks/${encodedUrl}`
+        `/api/v1/workspace/${workspaceID[0].id}/webhooks/${encodedUrl}`
       );
       return new Response(
         JSON.stringify(
@@ -1402,33 +1398,10 @@ export default {
         if (method === "tools/call") {
           const name = params?.name;
           const args = params?.arguments || {};
-          // if (request.headers.get("Authorization") === null) {
-          //   return new Response(
-          //     JSON.stringify(jsonRpcError(null, -32001, "Unauthenticated")),
-          //     { status: 401 }
-          //   );
-          // }
-
-          if (name === "ping") {
-            // const workspaceID = await apiRequest(
-            //   request.headers.get("Authorization")!,
-            //   "GET",
-            //   "/api/v1/workspaces",
-            //   args
-            // ) as [];
+          if (request.headers.get("Authorization") === null) {
             return new Response(
-              JSON.stringify(
-                jsonRpcResponse(id, {
-                  content: [
-                    {
-                      type: "text",
-                      text: `Hello , its working fine withhh message : FOUND IT `,
-                    },
-                  ],
-                  isError: false,
-                })
-              ),
-              { headers: { "Content-Type": "application/json" } }
+              JSON.stringify(jsonRpcError(null, -32001, "Unauthenticated")),
+              { status: 401 }
             );
           }
 
