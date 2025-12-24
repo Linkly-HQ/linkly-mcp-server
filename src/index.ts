@@ -643,12 +643,7 @@ async function handleToolCall(
       );
     }
     case "create_link": {
-      const workspaceID = await apiRequest(
-        token,
-        "GET",
-        "/api/v1/workspaces",
-        args
-      );
+      const workspaceID = await apiRequest(token, "GET", `/api/v1/workspaces`);
       // const result = await apiRequest(
       //   token,
       //   "POST",
