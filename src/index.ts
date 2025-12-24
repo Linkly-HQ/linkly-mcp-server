@@ -624,7 +624,7 @@ async function handleToolCall(
             content: [
               {
                 type: "text",
-                text: `Hellooooo , its working fine with message : ${message} ${token}`,
+                text: `Hello , its working fine with message : ${message} ${token}`,
               },
             ],
             isError: false,
