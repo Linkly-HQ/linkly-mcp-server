@@ -1388,12 +1388,12 @@ export default {
           // }
 
           if (name === "ping") {
-            const workspaceID = await apiRequest(
-              request.headers.get("Authorization")!,
-              "GET",
-              "/api/v1/workspaces",
-              args
-            ) as [];
+            // const workspaceID = await apiRequest(
+            //   request.headers.get("Authorization")!,
+            //   "GET",
+            //   "/api/v1/workspaces",
+            //   args
+            // ) as [];
             return new Response(
               JSON.stringify(
                 jsonRpcResponse(id, {
