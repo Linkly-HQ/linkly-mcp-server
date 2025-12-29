@@ -19,11 +19,155 @@ interface OAuthState {
 
 const TOOLS = [
   {
-    name: "get_workspace",
+    name: "test_authentication",
+    description: "Test API Authentication",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "list_workspaces",
     description: "Return details of authenticated workspace",
     inputSchema: {
       type: "object",
       properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "batchDeleteLinks",
+    description: "Batch delete multiple links",
+    inputSchema: {
+      type: "object",
+      properties: {
+        ids: {
+          type: "array",
+          items: {
+            type: "integer",
+          },
+          description: "Array of link IDs to delete",
+        },
+      },
+      required: ["ids"],
+    },
+  },
+  {
+    name: "list_links_paginated",
+    description: "List links with pagination",
+    inputSchema: {
+      type: "object",
+      properties: {
+        page: {
+          type: "integer",
+          description: "Page number",
+        },
+        page_size: {
+          type: "integer",
+          description: "Items per page",
+        },
+      },
+    },
+  },
+  {
+    name: "get_link_OAuth",
+    description: "Get link details (OAuth flow)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        link_id: {
+          type: "integer",
+        },
+      },
+      required: ["link_id"],
+    },
+  },
+  {
+    name: "create_or_update_linkOAuth",
+    description: "Create or update a link (OAuth flow)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: {
+          type: "integer",
+          description: "Link ID (include to update existing link)",
+        },
+        url: {
+          type: "string",
+          description: "The destination URL",
+        },
+        name: { type: "string", description: "Nickname for the link" },
+        note: {
+          type: "string",
+          description: "Private note about this link",
+        },
+        domain: {
+          type: "string",
+          description: "Custom domain (without trailing /)",
+        },
+        domain_id: {
+          type: "integer",
+          description: "Domain ID (alternative to domain name)",
+        },
+        slug: {
+          type: "string",
+          description: "Custom slug (must start with /)",
+        },
+        enabled: { type: "boolean", description: "Whether the link is active" },
+        utm_source: { type: "string" },
+        utm_medium: { type: "string" },
+        utm_campaign: { type: "string" },
+        utm_term: { type: "string" },
+        utm_content: { type: "string" },
+      },
+      required: ["url"],
+    },
+  },
+  {
+    name: "update_workspace",
+    description: "Update workspace settings",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Workspace name",
+        },
+        webhooks: {
+          type: "string",
+          description: "Webhook URL for notifications",
+        },
+      },
+      required: ["name", "webhooks"],
+    },
+  },
+  {
+    name: "list_links_advanced",
+    description: "List links with sorting and search",
+    inputSchema: {
+      type: "object",
+      properties: {
+        page: {
+          type: "integer",
+        },
+        page_size: {
+          type: "integer",
+        },
+        search: {
+          type: "string",
+          description: "Search Query",
+        },
+        sort_by: {
+          type: "string",
+          description: "Field to sort by",
+        },
+        sort_dir: {
+          type: "string",
+          enum: ["asc", "desc"],
+          description: "Sort direction",
+        },
+      },
       required: [],
     },
   },
@@ -642,6 +786,113 @@ async function handleToolCall(
         { headers: { "Content-Type": "application/json" } }
       );
     }
+    case "test_authentication": {
+      const result = await apiRequest(token, "POST", "api/v1/test");
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "update_workspace": {
+      const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
+      const result = await apiRequest(
+        token,
+        "PATCH",
+        `/api/v1/workspace/${workspaceID[0].id}`,
+        args
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "list_links_paginated": {
+      const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
+      const result = await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspace/${workspaceID[0].id}/links`
+      );
+
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "get_link_OAuth": {
+      const { link_id } = args;
+      const result = await apiRequest(token, "GET", `/api/v1/link/${link_id}`);
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "create_or_update_linkOAuth": {
+      const result = await apiRequest(token, "POST", "api/v1/link", args);
+
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
     case "create_link": {
       const workspaceID = (await apiRequest(
         token,
@@ -680,6 +931,60 @@ async function handleToolCall(
       const result = await apiRequest(
         token,
         "POST",
+        `/api/v1/workspace/${workspaceID[0].id}/links`,
+        args
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "list_links_advanced":{
+        const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
+      const result = await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspace/${workspaceID[0].id}/list_links`,
+        args
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "batchDeleteLinks": {
+      const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
+      const result = await apiRequest(
+        token,
+        "DELETE",
         `/api/v1/workspace/${workspaceID[0].id}/links`,
         args
       );
@@ -745,7 +1050,7 @@ async function handleToolCall(
         { headers: { "Content-Type": "application/json" } }
       );
     }
-    case "get_workspace": {
+    case "list_workspaces": {
       const result = await apiRequest(token, "GET", `/api/v1/workspaces`);
       return new Response(
         JSON.stringify(
