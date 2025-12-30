@@ -26,6 +26,12 @@ const TOOLS = [
       properties: {},
       required: [],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   {
     name: "list_workspaces",
@@ -34,6 +40,12 @@ const TOOLS = [
       type: "object",
       properties: {},
       required: [],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -52,6 +64,12 @@ const TOOLS = [
       },
       required: ["ids"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: true,
+    },
   },
   {
     name: "list_links_paginated",
@@ -69,6 +87,12 @@ const TOOLS = [
         },
       },
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   {
     name: "get_link_OAuth",
@@ -81,6 +105,12 @@ const TOOLS = [
         },
       },
       required: ["link_id"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -123,6 +153,12 @@ const TOOLS = [
       },
       required: ["url"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
+    },
   },
   {
     name: "update_workspace",
@@ -140,6 +176,12 @@ const TOOLS = [
         },
       },
       required: ["name", "webhooks"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
     },
   },
   {
@@ -170,6 +212,12 @@ const TOOLS = [
       },
       required: [],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   {
     name: "ping",
@@ -184,11 +232,23 @@ const TOOLS = [
       },
       required: ["message"],
     },
+    annotations: {
+      openWorldHint: false,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   {
     name: "create_link",
     description:
       "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
+    },
     inputSchema: {
       type: "object",
       properties: {
@@ -349,6 +409,12 @@ const TOOLS = [
       },
       required: ["link_id"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
+    },
   },
   {
     name: "delete_link",
@@ -362,6 +428,12 @@ const TOOLS = [
         },
       },
       required: ["link_id"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -377,6 +449,12 @@ const TOOLS = [
       },
       required: ["link_id"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   {
     name: "list_links",
@@ -386,6 +464,12 @@ const TOOLS = [
       type: "object",
       properties: {},
       required: [],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -400,6 +484,12 @@ const TOOLS = [
         },
       },
       required: [],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -450,6 +540,12 @@ const TOOLS = [
         },
       },
       required: [],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -505,6 +601,12 @@ const TOOLS = [
       },
       required: ["counter"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   {
     name: "export_clicks",
@@ -541,6 +643,12 @@ const TOOLS = [
       },
       required: [],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   // Domain Management
   {
@@ -550,6 +658,12 @@ const TOOLS = [
       type: "object",
       properties: {},
       required: [],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -566,6 +680,12 @@ const TOOLS = [
       },
       required: ["name"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
+    },
   },
   {
     name: "delete_domain",
@@ -579,6 +699,12 @@ const TOOLS = [
         },
       },
       required: ["domain_id"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: true,
     },
   },
   // Link Search
@@ -597,6 +723,12 @@ const TOOLS = [
       },
       required: ["query"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
   },
   // Workspace Webhooks
   {
@@ -607,6 +739,12 @@ const TOOLS = [
       type: "object",
       properties: {},
       required: [],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -623,6 +761,12 @@ const TOOLS = [
       },
       required: ["url"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
+    },
   },
   {
     name: "unsubscribe_webhook",
@@ -636,6 +780,12 @@ const TOOLS = [
         },
       },
       required: ["url"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: true,
     },
   },
   // Link Webhooks
@@ -651,6 +801,12 @@ const TOOLS = [
         },
       },
       required: ["link_id"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: true,
+      idempotentHint: true,
+      destructiveHint: false,
     },
   },
   {
@@ -671,6 +827,12 @@ const TOOLS = [
       },
       required: ["link_id", "url"],
     },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: false,
+    },
   },
   {
     name: "unsubscribe_link_webhook",
@@ -689,6 +851,12 @@ const TOOLS = [
         },
       },
       required: ["link_id", "url"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: false,
+      destructiveHint: true,
     },
   },
 ] as const;
@@ -949,8 +1117,8 @@ async function handleToolCall(
         { headers: { "Content-Type": "application/json" } }
       );
     }
-    case "list_links_advanced":{
-        const workspaceID = (await apiRequest(
+    case "list_links_advanced": {
+      const workspaceID = (await apiRequest(
         token,
         "GET",
         `/api/v1/workspaces`
@@ -1571,8 +1739,11 @@ export default {
       }
     }
 
-    if(url.pathname === "/.well-known/openai-apps-challenge" && request.method==="GET"){
-      return new Response("cIb4e-RR-9Sn82Ewkgjp6OcJrN1BvPcdLEtYUjUzDBA")
+    if (
+      url.pathname === "/.well-known/openai-apps-challenge" &&
+      request.method === "GET"
+    ) {
+      return new Response("cIb4e-RR-9Sn82Ewkgjp6OcJrN1BvPcdLEtYUjUzDBA");
     }
 
     if (
