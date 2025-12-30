@@ -1508,27 +1508,6 @@ async function handleToolCall(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    console.log("headers", url);
-    console.log(
-      `${url.origin}/oauth/callbacks`,
-      `${JSON.stringify(Object.keys(request))}`
-    );
-    console.log(
-      "oauth callback",
-      JSON.stringify(
-        {
-          method: request.method,
-          url: request.url,
-          headers: Object.fromEntries(request.headers),
-        },
-        null,
-        2
-      )
-    );
-
-    console.log("token", request.headers.get("Authorization"));
-
-    console.log(`${request}`);
 
     // OAuth callback endpoint
     if (url.pathname === "/oauth/callback" && request.method === "GET") {
@@ -1590,6 +1569,10 @@ export default {
           headers: { "Content-Type": "application/json" },
         });
       }
+    }
+
+    if(url.pathname === "/.well-known/openai-apps-challenge" && request.method==="GET"){
+      return new Response("cIb4e-RR-9Sn82Ewkgjp6OcJrN1BvPcdLEtYUjUzDBA")
     }
 
     if (
