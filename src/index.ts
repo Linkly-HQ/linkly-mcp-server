@@ -1880,6 +1880,14 @@ export default {
                 serverInfo: {
                   name: "linkly",
                   version: "1.0.0",
+                  icons: [
+                    { src: "https://mcp.linklyhq.com/icons/icon-16x16.png", mimeType: "image/png", size: "16x16" },
+                    { src: "https://mcp.linklyhq.com/icons/icon-32x32.png", mimeType: "image/png", size: "32x32" },
+                    { src: "https://mcp.linklyhq.com/icons/icon-48x48.png", mimeType: "image/png", size: "48x48" },
+                    { src: "https://mcp.linklyhq.com/icons/icon-64x64.png", mimeType: "image/png", size: "64x64" },
+                    { src: "https://mcp.linklyhq.com/icons/icon-128x128.png", mimeType: "image/png", size: "128x128" },
+                    { src: "https://mcp.linklyhq.com/icons/icon-256x256.png", mimeType: "image/png", size: "256x256" },
+                  ],
                 },
               })
             ),
