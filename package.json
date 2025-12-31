@@ -1,7 +1,15 @@
 {
 	"name": "linkly-mcp-server",
-	"version": "0.0.0",
-	"private": true,
+	"version": "1.0.0",
+	"description": "Official MCP server for Linkly - URL shortener and link management",
+	"author": "Linkly <support@linklyhq.com>",
+	"license": "MIT",
+	"homepage": "https://linklyhq.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Linkly-HQ/linkly-mcp-server"
+	},
+	"keywords": ["mcp", "linkly", "url-shortener", "links", "analytics"],
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
