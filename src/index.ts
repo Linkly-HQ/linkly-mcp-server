@@ -1790,7 +1790,7 @@ export default {
 
     // Health check
     if (url.pathname === "/" && request.method === "GET") {
-      return new Response("MCP Test Server Running", {
+      return new Response("Linkly MCP Server. For documentation please visit https://linklyhq.com/support/mcp-server", {
         status: 200,
       });
     }
