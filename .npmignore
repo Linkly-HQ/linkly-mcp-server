@@ -1,0 +1,23 @@
+# Development files
+src/
+tsconfig.json
+wrangler.jsonc
+worker-configuration.d.ts
+.wrangler/
+
+# Secrets and tokens
+.mcpregistry_*
+.env
+.env.*
+
+# IDE and editor
+.claude/
+.vscode/
+.idea/
+
+# Build artifacts
+*.tgz
+node_modules/
+
+# Public assets (only needed for hosted version)
+public/
