@@ -707,6 +707,30 @@ const TOOLS = [
       destructiveHint: true,
     },
   },
+  {
+    name: "update_domain_favicon",
+    description: "Update the favicon URL for a custom domain.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        domain_id: {
+          type: "integer",
+          description: "The ID of the domain to update",
+        },
+        favicon_url: {
+          type: "string",
+          description: "URL to the favicon image",
+        },
+      },
+      required: ["domain_id", "favicon_url"],
+    },
+    annotations: {
+      openWorldHint: true,
+      readOnlyHint: false,
+      idempotentHint: true,
+      destructiveHint: false,
+    },
+  },
   // Link Search
   {
     name: "search_links",
@@ -1100,7 +1124,7 @@ async function handleToolCall(
         token,
         "POST",
         `/api/v1/workspace/${workspaceID[0].id}/links`,
-        args
+        { id: link_id, ...updateData }
       );
       return new Response(
         JSON.stringify(
@@ -1464,6 +1488,33 @@ async function handleToolCall(
         token,
         "DELETE",
         `/api/v1/workspace/${workspaceID[0].id}/domains/${args.domain_id}`
+      );
+      return new Response(
+        JSON.stringify(
+          jsonRpcResponse(id, {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+            isError: false,
+          })
+        ),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
+    case "update_domain_favicon": {
+      const workspaceID = (await apiRequest(
+        token,
+        "GET",
+        `/api/v1/workspaces`
+      )) as { id: number; name: string }[];
+      const result = await apiRequest(
+        token,
+        "PATCH",
+        `/api/v1/workspace/${workspaceID[0].id}/domains/${args.domain_id}/favicon`,
+        { favicon_url: args.favicon_url }
       );
       return new Response(
         JSON.stringify(
