@@ -1,23 +1,47 @@
 {
 	"name": "linkly-mcp-server",
-	"version": "1.0.0",
-	"description": "Official MCP server for Linkly - URL shortener and link management",
+	"version": "1.3.0",
+	"description": "Official MCP server for Linkly - Create and manage short links, track clicks, and automate URL management",
 	"author": "Linkly <support@linklyhq.com>",
 	"license": "MIT",
 	"homepage": "https://linklyhq.com",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/Linkly-HQ/linkly-mcp-server"
+		"url": "git+https://github.com/Linkly-HQ/linkly-mcp-server.git"
 	},
-	"keywords": ["mcp", "linkly", "url-shortener", "links", "analytics"],
+	"bugs": {
+		"url": "https://github.com/Linkly-HQ/linkly-mcp-server/issues"
+	},
+	"keywords": [
+		"mcp",
+		"model-context-protocol",
+		"linkly",
+		"url-shortener",
+		"link-management",
+		"analytics",
+		"claude",
+		"ai"
+	],
+	"main": "index.js",
+	"type": "module",
+	"bin": {
+		"linkly-mcp-server": "index.js"
+	},
 	"scripts": {
+		"start": "node index.js",
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
-		"start": "wrangler dev",
 		"cf-typegen": "wrangler types"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^5.5.2",
 		"wrangler": "^4.52.1"
-	}
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"mcpName": "com.linklyhq/linkly"
 }
