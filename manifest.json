@@ -1,0 +1,146 @@
+{
+  "manifest_version": "0.3",
+  "name": "Linkly",
+  "version": "1.2.3",
+  "description": "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
+  "author": {
+    "name": "Linkly"
+  },
+  "homepage": "https://linklyhq.com/",
+  "support": "https://linklyhq.com/support/claude-desktop-integration",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "API_Key": "${user_config.API_Key}",
+        "Workspace_Id": "${user_config.Workspace_Id}"
+      }
+    }
+  },
+  "icon":"icon.png",
+  "tools": [
+    {
+      "name": "list_workspaces",
+      "description": "Return details of authenticated workspace"
+    },
+
+    {
+      "name": "batchDeleteLinks",
+      "description": "Batch delete multiple links"
+    },
+    {
+      "name": "list_links_paginated",
+      "description": "List links with pagination"
+    },
+
+    {
+      "name": "update_workspace",
+      "description": "Update workspace settings"
+    },
+    {
+      "name": "list_links_advanced",
+      "description": "List links with sorting and search"
+    },
+    {
+      "name": "ping",
+      "description": "Health check"
+    },
+    {
+      "name": "create_link",
+      "description": "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter."
+    },
+    {
+      "name": "update_link",
+      "description": "Update an existing Linkly link by its ID"
+    },
+    {
+      "name": "delete_link",
+      "description": "Delete a Linkly link by its ID"
+    },
+    {
+      "name": "get_link",
+      "description": "Get details of a specific Linkly link by its ID"
+    },
+    {
+      "name": "list_links",
+      "description": "List all links in the workspace. Returns links with click statistics."
+    },
+    {
+      "name": "get_clicks",
+      "description": "Get recent click data for the workspace"
+    },
+    {
+      "name": "get_analytics",
+      "description": "Get time-series click analytics data for charting. Returns click counts over time."
+    },
+    {
+      "name": "get_analytics_by",
+      "description": "Get click counts grouped by a dimension (country, platform, browser, etc.). Useful for breakdowns and top-N reports."
+    },
+    {
+      "name": "export_clicks",
+      "description": "Export detailed click records with full information (timestamp, browser, country, URL, platform, referer, bot, ISP, params)."
+    },
+
+    {
+      "name": "list_domains",
+      "description": "List all custom domains in the workspace."
+    },
+    {
+      "name": "create_domain",
+      "description": "Add a custom domain to the workspace. The domain must be configured to point to Linkly's servers."
+    },
+    {
+      "name": "delete_domain",
+      "description": "Remove a custom domain from the workspace."
+    },
+    {
+      "name": "search_links",
+      "description": "Search for links by name, URL, or note. Returns matching links with click statistics."
+    },
+    {
+      "name": "list_webhooks",
+      "description": "List all webhook URLs subscribed to the workspace. These receive click events for all links."
+    },
+    {
+      "name": "subscribe_webhook",
+      "description": "Subscribe a webhook URL to receive click events for all links in the workspace."
+    },
+    {
+      "name": "unsubscribe_webhook",
+      "description": "Unsubscribe a webhook URL from workspace click events."
+    },
+    {
+      "name": "list_link_webhooks",
+      "description": "List all webhook URLs subscribed to a specific link."
+    },
+    {
+      "name": "subscribe_link_webhook",
+      "description": "Subscribe a webhook URL to receive click events for a specific link."
+    },
+    {
+      "name": "unsubscribe_link_webhook",
+      "description": "Unsubscribe a webhook URL from a specific link's click events."
+    }
+  ],
+  "user_config": {
+    "API_Key": {
+      "type": "string",
+      "title": "Api Key",
+      "description": "Linkly Api Key",
+      "required": true,
+      "sensitive": true
+    },
+    "Workspace_Id": {
+      "type": "string",
+      "title": "Linkly Workspace Id",
+      "description": "Linkly Workspace Id",
+      "required": true,
+      "sensitive": true
+    }
+  },
+  "license": "MIT"
+}
