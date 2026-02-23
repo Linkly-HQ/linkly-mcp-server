@@ -233,7 +233,7 @@ const TOOLS = [
       required: ["message"],
     },
     annotations: {
-      openWorldHint: false,
+      openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
