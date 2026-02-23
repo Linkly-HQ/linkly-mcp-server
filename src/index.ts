@@ -227,7 +227,7 @@ const TOOLS = [
       properties: {
         message: {
           type: "string",
-          description: "a message to ping , default to Winter is here 🐺❄️",
+          description: "a message to ping , default to Hello From Linkkly",
         },
       },
       required: ["message"],
