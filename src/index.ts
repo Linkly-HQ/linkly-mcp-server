@@ -1725,7 +1725,7 @@ async function handleToolCall(
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, _env: Env): Promise<Response> {
     const url = new URL(request.url);
 
     // OAuth callback endpoint
@@ -1736,6 +1736,26 @@ export default {
       if (!code) {
         return new Response(
           JSON.stringify({ error: "Missing authorization code" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      // Decode client_id and client_secret from the OAuth state parameter
+      let clientId: string | undefined;
+      let clientSecret: string | undefined;
+      if (state) {
+        try {
+          const decoded = JSON.parse(atob(state));
+          clientId = decoded.client_id;
+          clientSecret = decoded.client_secret;
+        } catch {
+          // state may not carry credentials — fall through
+        }
+      }
+
+      if (!clientId || !clientSecret) {
+        return new Response(
+          JSON.stringify({ error: "Missing client_id or client_secret in OAuth state" }),
           { status: 400, headers: { "Content-Type": "application/json" } }
         );
       }
@@ -1753,9 +1773,8 @@ export default {
               grant_type: "authorization_code",
               code,
               redirect_uri: `${url.origin}/oauth/callback`,
-              // Add your client_id and client_secret here
-              client_id: env.LINKLY_CLIENT_ID,
-              client_secret: env.LINKLY_CLIENT_SECRET,
+              client_id: clientId,
+              client_secret: clientSecret,
             }),
           }
         );

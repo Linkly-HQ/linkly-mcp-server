@@ -5,10 +5,7 @@ declare namespace Cloudflare {
 	interface GlobalProps {
 		mainModule: typeof import("./src/index");
 	}
-	interface Env {
-		LINKLY_CLIENT_ID: "linkly_openai_90af9feccbc6496e";
-		LINKLY_CLIENT_SECRET: "6J1Wmr8NAnt7Jdf21PUdkJrNK4sX42NQy5V3k9xE";
-	}
+	interface Env {}
 }
 interface Env extends Cloudflare.Env {}
 
