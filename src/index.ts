@@ -2183,11 +2183,35 @@ export default {
     const apiKey = url.searchParams.get("apiKey") || "";
     const workspaceId = url.searchParams.get("workspaceId") || "";
 
-    // Health check
+    // ------------------------------------------------------------------
+    // GET / — MCP Streamable HTTP optionally lets clients open a long
+    // lived SSE stream via GET. We don't initiate server→client messages,
+    // so per spec we return 405 with Accept-Post so the client falls back
+    // to POST cleanly. Browsers without an event-stream Accept get the
+    // human-readable welcome text.
+    // ------------------------------------------------------------------
     if (url.pathname === "/" && request.method === "GET") {
-      return new Response("Linkly MCP Server. For documentation please visit https://linklyhq.com/support/mcp-server", {
-        status: 200,
-      });
+      const accept = request.headers.get("Accept") || "";
+      if (accept.includes("text/event-stream")) {
+        return new Response(null, {
+          status: 405,
+          headers: {
+            Allow: "POST",
+            "Accept-Post": "application/json",
+            "Access-Control-Allow-Origin": "*",
+          },
+        });
+      }
+      return new Response(
+        "Linkly MCP Server. For documentation please visit https://linklyhq.com/support/mcp-server",
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "Accept-Post": "application/json",
+          },
+        }
+      );
     }
 
     // if (!apiKey || !workspaceId) {
@@ -2214,10 +2238,24 @@ export default {
         const oauthState = getOAuthState(params);
         // ---- initialize ----
         if (method === "initialize") {
+          // Per the MCP spec, the server should echo back the client's
+          // requested protocolVersion when it can support it. We support
+          // the two most-deployed revisions; anything else falls back to
+          // the latest we know.
+          const SUPPORTED_PROTOCOL_VERSIONS = [
+            "2025-06-18",
+            "2025-03-26",
+            "2024-11-05",
+          ];
+          const requested = params?.protocolVersion;
+          const protocolVersion = SUPPORTED_PROTOCOL_VERSIONS.includes(requested)
+            ? requested
+            : "2025-06-18";
+
           return new Response(
             JSON.stringify(
               jsonRpcResponse(id, {
-                protocolVersion: "2024-11-05",
+                protocolVersion,
                 capabilities: {
                   tools: { listChanged: false },
                 },
