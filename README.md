@@ -1,6 +1,10 @@
 # Linkly MCP Server
 
-Official Model Context Protocol (MCP) server for [Linkly](https://linklyhq.com) - the URL shortener and link management platform.
+Official Model Context Protocol (MCP) server for [Linkly](https://linklyhq.com) — the URL shortener and link management platform.
+
+**This repository powers the hosted MCP server at `https://mcp.linklyhq.com`.** That is the only supported way to connect an AI assistant to Linkly via MCP. See https://linklyhq.com/support/mcp-server for setup instructions.
+
+> ⚠️ **The `linkly-mcp-server` npm package is deprecated.** The self-hosted / API-key flow is no longer maintained. All users should migrate to the hosted server — it uses OAuth 2.1 with PKCE, requires no API keys or local install, and always runs the latest tool set. The npm package will continue to exist on the registry for backwards compatibility but will not receive new tools or bug fixes, and may be unpublished in the future.
 
 ## Documentation
 
@@ -15,57 +19,39 @@ For full documentation, setup guides, and examples, visit: **https://linklyhq.co
 - Search and filter links
 - Export click data
 
-## Two Ways to Use
-
-### Option 1: Hosted Server (Recommended)
-
-Use Linkly's hosted MCP server with OAuth authentication. No installation required.
+## Using the hosted server
 
 **Server URL:** `https://mcp.linklyhq.com`
 
-This is the easiest way to get started - just connect your MCP client to the hosted server and authenticate with your Linkly account.
+Connect your MCP client to the hosted server and sign in to Linkly when your browser opens. That's it — no API keys, no installation, no config drift.
 
-### Option 2: Self-Hosted (npm)
-
-Run your own instance using your API key.
-
-#### Installation
-
-```bash
-npm install -g linkly-mcp-server
-```
-
-Or run directly with npx:
-
-```bash
-npx linkly-mcp-server
-```
-
-#### Configuration
-
-Set the required environment variables:
-
-```bash
-export LINKLY_API_KEY="your-api-key"
-export LINKLY_WORKSPACE_ID="your-workspace-id"
-```
-
-You can find these in your [Linkly dashboard](https://app.linklyhq.com) under Settings > API.
-
-#### Usage with Claude Desktop
-
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+### Claude Desktop
 
 ```json
 {
   "mcpServers": {
     "linkly": {
       "command": "npx",
-      "args": ["linkly-mcp-server"],
-      "env": {
-        "LINKLY_API_KEY": "your-api-key",
-        "LINKLY_WORKSPACE_ID": "your-workspace-id"
-      }
+      "args": ["-y", "mcp-remote", "https://mcp.linklyhq.com"]
+    }
+  }
+}
+```
+
+### Claude Code (CLI)
+
+```bash
+claude mcp add --transport http linkly https://mcp.linklyhq.com
+```
+
+### ChatGPT Desktop
+
+```json
+{
+  "servers": {
+    "linkly": {
+      "type": "url",
+      "url": "https://mcp.linklyhq.com"
     }
   }
 }
