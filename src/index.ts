@@ -979,7 +979,7 @@ async function handleToolCall(
       );
     }
     case "test_authentication": {
-      const result = await apiRequest(token, "POST", "api/v1/test");
+      const result = await apiRequest(token, "POST", "/api/v1/test");
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
@@ -1068,7 +1068,7 @@ async function handleToolCall(
       );
     }
     case "create_or_update_linkOAuth": {
-      const result = await apiRequest(token, "POST", "api/v1/link", args);
+      const result = await apiRequest(token, "POST", "/api/v1/link", args);
 
       return new Response(
         JSON.stringify(
@@ -1724,91 +1724,229 @@ async function handleToolCall(
   }
 }
 
+// ============================================================================
+// OAuth proxy helpers
+// ============================================================================
+//
+// The Linkly Phoenix app at app.linklyhq.com only supports OAuth 2.0
+// authorization_code grant with pre-registered confidential clients — no DCR,
+// no PKCE, no refresh_token, and no localhost redirect URIs. The MCP SDK needs
+// all of those. So this Worker stands in as a self-contained OAuth proxy:
+//
+//   1. /register   — RFC 7591 dynamic client registration (returns a synthetic
+//                    public client_id; we don't track it).
+//   2. /authorize  — Wraps the MCP client's redirect_uri + PKCE challenge into
+//                    a signed `state`, then redirects to the upstream Linkly
+//                    authorize page using the worker's pre-registered
+//                    confidential client (LINKLY_CLIENT_ID/SECRET).
+//   3. /oauth/callback — Receives the upstream code, exchanges it for an
+//                    upstream access_token, mints its own signed authorization
+//                    code wrapping the access_token, and redirects to the
+//                    original MCP client redirect_uri.
+//   4. /token      — Verifies the worker's auth code + PKCE code_verifier,
+//                    returns the wrapped upstream access_token.
+//
+// Worker-issued auth codes embed the token directly so no server-side state is
+// needed. They're HMAC-signed with SIGNING_SECRET and short-lived.
+
+interface MCPEnv {
+  LINKLY_CLIENT_ID: string;
+  LINKLY_CLIENT_SECRET: string;
+  SIGNING_SECRET: string;
+}
+
+function b64uEncode(data: Uint8Array | string): string {
+  const bytes =
+    typeof data === "string" ? new TextEncoder().encode(data) : data;
+  let str = "";
+  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function b64uDecode(str: string): Uint8Array {
+  let s = str.replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function hmacSign(secret: string, payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(payload)
+  );
+  return b64uEncode(new Uint8Array(sig));
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+async function signPayload<T>(secret: string, payload: T): Promise<string> {
+  const encoded = b64uEncode(JSON.stringify(payload));
+  const sig = await hmacSign(secret, encoded);
+  return `${encoded}.${sig}`;
+}
+
+async function verifyPayload<T = any>(
+  secret: string,
+  token: string
+): Promise<T | null> {
+  const parts = token.split(".");
+  if (parts.length !== 2) return null;
+  const [encoded, sig] = parts;
+  const expected = await hmacSign(secret, encoded);
+  if (!constantTimeEqual(expected, sig)) return null;
+  try {
+    const json = new TextDecoder().decode(b64uDecode(encoded));
+    return JSON.parse(json) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function verifyPKCE(
+  verifier: string,
+  challenge: string,
+  method: string
+): Promise<boolean> {
+  if (method === "plain") return verifier === challenge;
+  if (method === "S256") {
+    const hash = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(verifier)
+    );
+    return b64uEncode(new Uint8Array(hash)) === challenge;
+  }
+  return false;
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
+const UPSTREAM = "https://app.linklyhq.com";
+const SELF_ORIGIN = "https://mcp.linklyhq.com";
+const CALLBACK_PATH = "/oauth/callback";
+
+interface AuthState {
+  rd: string; // MCP client redirect_uri
+  st?: string; // MCP client state
+  cc?: string; // PKCE code_challenge
+  ccm?: string; // PKCE code_challenge_method
+  exp: number;
+}
+
+interface AuthCodePayload {
+  at: string; // upstream access_token
+  rd: string; // MCP client redirect_uri (for binding)
+  cc?: string;
+  ccm?: string;
+  exp: number;
+}
+
 export default {
-  async fetch(request: Request, _env: Env): Promise<Response> {
+  async fetch(request: Request, env: MCPEnv): Promise<Response> {
     const url = new URL(request.url);
 
-    // OAuth callback endpoint
-    if (url.pathname === "/oauth/callback" && request.method === "GET") {
+    // ------------------------------------------------------------------
+    // OAuth callback — Linkly redirects here after the user approves
+    // ------------------------------------------------------------------
+    if (url.pathname === CALLBACK_PATH && request.method === "GET") {
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
+      const upstreamError = url.searchParams.get("error");
 
-      if (!code) {
+      if (upstreamError) {
         return new Response(
-          JSON.stringify({ error: "Missing authorization code" }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
+          `OAuth error from Linkly: ${upstreamError}`,
+          { status: 400, headers: { "Content-Type": "text/plain" } }
         );
       }
-
-      // Decode client_id and client_secret from the OAuth state parameter
-      let clientId: string | undefined;
-      let clientSecret: string | undefined;
-      if (state) {
-        try {
-          const decoded = JSON.parse(atob(state));
-          clientId = decoded.client_id;
-          clientSecret = decoded.client_secret;
-        } catch {
-          // state may not carry credentials — fall through
-        }
+      if (!code || !state) {
+        return new Response("Missing code or state", { status: 400 });
       }
 
-      if (!clientId || !clientSecret) {
+      const authState = await verifyPayload<AuthState>(
+        env.SIGNING_SECRET,
+        state
+      );
+      if (!authState || authState.exp < Date.now()) {
+        return new Response("Invalid or expired state", { status: 400 });
+      }
+
+      // Exchange the upstream code for an upstream access token using the
+      // worker's pre-registered client credentials.
+      const tokenForm = new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: `${SELF_ORIGIN}${CALLBACK_PATH}`,
+        client_id: env.LINKLY_CLIENT_ID,
+        client_secret: env.LINKLY_CLIENT_SECRET,
+      });
+
+      const upstreamResp = await fetch(`${UPSTREAM}/oauth/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: tokenForm.toString(),
+      });
+
+      if (!upstreamResp.ok) {
+        const text = await upstreamResp.text();
+        console.log("Upstream token exchange failed:", upstreamResp.status, text);
         return new Response(
-          JSON.stringify({ error: "Missing client_id or client_secret in OAuth state" }),
-          { status: 400, headers: { "Content-Type": "application/json" } }
+          `Upstream token exchange failed (${upstreamResp.status}): ${text}`,
+          { status: 502, headers: { "Content-Type": "text/plain" } }
         );
       }
 
-      // Exchange code for token
-      try {
-        const tokenResponse = await fetch(
-          "https://app.linklyhq.com/oauth/token",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              grant_type: "authorization_code",
-              code,
-              redirect_uri: `${url.origin}/oauth/callback`,
-              client_id: clientId,
-              client_secret: clientSecret,
-            }),
-          }
-        );
+      const upstreamToken = (await upstreamResp.json()) as {
+        access_token: string;
+        token_type?: string;
+        scope?: string;
+      };
 
-        if (!tokenResponse.ok) {
-          throw new Error("Token exchange failed");
-        }
+      // Mint a worker auth code wrapping the upstream token. Short TTL since
+      // the MCP client should redeem it within seconds.
+      const authCode = await signPayload<AuthCodePayload>(env.SIGNING_SECRET, {
+        at: upstreamToken.access_token,
+        rd: authState.rd,
+        cc: authState.cc,
+        ccm: authState.ccm,
+        exp: Date.now() + 5 * 60 * 1000,
+      });
 
-        const tokenData = (await tokenResponse.json()) as unknown as {
-          access_token: string;
-          refresh_token: string;
-          expires_in: string | number;
-        };
-
-        return new Response(
-          JSON.stringify({
-            success: true,
-            access_token: tokenData.access_token,
-            refresh_token: tokenData.refresh_token,
-            expires_in: tokenData.expires_in,
-          }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      } catch (error: any) {
-        return new Response(JSON.stringify({ error: error.message }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+      // Redirect back to the MCP client's original redirect_uri.
+      const finalRedirect = new URL(authState.rd);
+      finalRedirect.searchParams.set("code", authCode);
+      if (authState.st) finalRedirect.searchParams.set("state", authState.st);
+      return Response.redirect(finalRedirect.toString(), 302);
     }
 
+    // ------------------------------------------------------------------
+    // ChatGPT app verification challenge (unchanged)
+    // ------------------------------------------------------------------
     if (
       url.pathname === "/.well-known/openai-apps-challenge" &&
       request.method === "GET"
@@ -1816,71 +1954,230 @@ export default {
       return new Response("cIb4e-RR-9Sn82Ewkgjp6OcJrN1BvPcdLEtYUjUzDBA");
     }
 
+    // ------------------------------------------------------------------
+    // RFC 9728 — OAuth 2.0 Protected Resource Metadata
+    // ------------------------------------------------------------------
     if (
       url.pathname === "/.well-known/oauth-protected-resource" &&
       request.method === "GET"
     ) {
-      return new Response(
-        JSON.stringify({
-          resource: "https://mcp.linklyhq.com",
-          authorization_servers: ["https://app.linklyhq.com"],
-          scopes_supported: ["full_access"],
-        }),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Authorize proxy — redirect to app.linklyhq.com with all params forwarded
-    if (url.pathname === "/authorize" && request.method === "GET") {
-      const target = new URL("https://app.linklyhq.com/oauth/authorize");
-      url.searchParams.forEach((value, key) => target.searchParams.set(key, value));
-      return Response.redirect(target.toString(), 302);
-    }
-
-    // Token proxy — forward POST to app.linklyhq.com/oauth/token
-    if (url.pathname === "/token" && request.method === "POST") {
-      const body = await request.text();
-      const tokenResponse = await fetch("https://app.linklyhq.com/oauth/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": request.headers.get("Content-Type") || "application/x-www-form-urlencoded",
-          ...(request.headers.get("Authorization") ? { "Authorization": request.headers.get("Authorization")! } : {}),
-        },
-        body,
-      });
-      const responseBody = await tokenResponse.text();
-      return new Response(responseBody, {
-        status: tokenResponse.status,
-        headers: {
-          "Content-Type": tokenResponse.headers.get("Content-Type") || "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
+      return jsonResponse({
+        resource: SELF_ORIGIN,
+        authorization_servers: [SELF_ORIGIN],
+        scopes_supported: ["full_access"],
+        bearer_methods_supported: ["header"],
       });
     }
 
+    // ------------------------------------------------------------------
+    // RFC 8414 — OAuth 2.0 Authorization Server Metadata
+    // ------------------------------------------------------------------
     if (
       url.pathname === "/.well-known/oauth-authorization-server" &&
       request.method === "GET"
     ) {
-      return new Response(
-        JSON.stringify({
-          issuer: "https://mcp.linklyhq.com",
-          authorization_endpoint: "https://mcp.linklyhq.com/authorize",
-          token_endpoint: "https://mcp.linklyhq.com/token",
-          revocation_endpoint: "https://app.linklyhq.com/oauth/revoke",
+      return jsonResponse({
+        issuer: SELF_ORIGIN,
+        authorization_endpoint: `${SELF_ORIGIN}/authorize`,
+        token_endpoint: `${SELF_ORIGIN}/token`,
+        registration_endpoint: `${SELF_ORIGIN}/register`,
+        revocation_endpoint: `${UPSTREAM}/oauth/revoke`,
+        response_types_supported: ["code"],
+        grant_types_supported: ["authorization_code"],
+        token_endpoint_auth_methods_supported: [
+          "none",
+          "client_secret_post",
+          "client_secret_basic",
+        ],
+        code_challenge_methods_supported: ["S256"],
+        scopes_supported: ["full_access"],
+      });
+    }
 
-          response_types_supported: ["code"],
-          grant_types_supported: ["authorization_code"],
-
-          token_endpoint_auth_methods_supported: [
-            "client_secret_post",
-            "client_secret_basic",
-          ],
-
-          scopes_supported: ["full_access"],
-        }),
-        { headers: { "Content-Type": "application/json" } }
+    // ------------------------------------------------------------------
+    // RFC 7591 — Dynamic Client Registration
+    //
+    // We don't actually track per-client metadata; PKCE is the security
+    // boundary. We hand back a synthetic public client_id so the MCP SDK
+    // can move past discovery.
+    // ------------------------------------------------------------------
+    if (url.pathname === "/register" && request.method === "POST") {
+      let body: any = {};
+      try {
+        body = await request.json();
+      } catch {
+        // tolerate empty body
+      }
+      const clientId = `mcp-${crypto.randomUUID()}`;
+      return jsonResponse(
+        {
+          client_id: clientId,
+          client_id_issued_at: Math.floor(Date.now() / 1000),
+          redirect_uris: body.redirect_uris ?? [],
+          grant_types: ["authorization_code"],
+          response_types: ["code"],
+          token_endpoint_auth_method: "none",
+          client_name: body.client_name ?? "Linkly MCP Client",
+        },
+        201
       );
+    }
+
+    // ------------------------------------------------------------------
+    // /authorize — wrap MCP redirect + PKCE in a signed state and forward
+    // to upstream Linkly using our pre-registered client_id.
+    // ------------------------------------------------------------------
+    if (url.pathname === "/authorize" && request.method === "GET") {
+      const redirectUri = url.searchParams.get("redirect_uri");
+      const responseType = url.searchParams.get("response_type") ?? "code";
+      const codeChallenge = url.searchParams.get("code_challenge") ?? undefined;
+      const codeChallengeMethod =
+        url.searchParams.get("code_challenge_method") ?? undefined;
+      const mcpState = url.searchParams.get("state") ?? undefined;
+
+      if (!redirectUri) {
+        return new Response("Missing redirect_uri", { status: 400 });
+      }
+      if (responseType !== "code") {
+        return new Response("Only response_type=code is supported", {
+          status: 400,
+        });
+      }
+      if (codeChallenge && codeChallengeMethod && codeChallengeMethod !== "S256") {
+        return new Response("Only S256 code_challenge_method is supported", {
+          status: 400,
+        });
+      }
+
+      const authState = await signPayload<AuthState>(env.SIGNING_SECRET, {
+        rd: redirectUri,
+        st: mcpState,
+        cc: codeChallenge,
+        ccm: codeChallengeMethod,
+        exp: Date.now() + 10 * 60 * 1000,
+      });
+
+      const target = new URL(`${UPSTREAM}/oauth/authorize`);
+      target.searchParams.set("client_id", env.LINKLY_CLIENT_ID);
+      target.searchParams.set("redirect_uri", `${SELF_ORIGIN}${CALLBACK_PATH}`);
+      target.searchParams.set("response_type", "code");
+      target.searchParams.set("state", authState);
+      const scope = url.searchParams.get("scope");
+      if (scope) target.searchParams.set("scope", scope);
+
+      return Response.redirect(target.toString(), 302);
+    }
+
+    // ------------------------------------------------------------------
+    // /token — exchange the worker's signed auth code (verifying PKCE) for
+    // the upstream access_token wrapped inside.
+    // ------------------------------------------------------------------
+    if (url.pathname === "/token" && request.method === "POST") {
+      const ctype = request.headers.get("Content-Type") || "";
+      let params: URLSearchParams;
+      if (ctype.includes("application/json")) {
+        const body = (await request.json()) as Record<string, string>;
+        params = new URLSearchParams(body as any);
+      } else {
+        params = new URLSearchParams(await request.text());
+      }
+
+      const grantType = params.get("grant_type");
+      if (grantType !== "authorization_code") {
+        return jsonResponse(
+          {
+            error: "unsupported_grant_type",
+            error_description: "Only authorization_code is supported",
+          },
+          400
+        );
+      }
+      const code = params.get("code");
+      const redirectUri = params.get("redirect_uri");
+      const codeVerifier = params.get("code_verifier");
+      if (!code || !redirectUri) {
+        return jsonResponse(
+          {
+            error: "invalid_request",
+            error_description: "Missing code or redirect_uri",
+          },
+          400
+        );
+      }
+
+      const payload = await verifyPayload<AuthCodePayload>(
+        env.SIGNING_SECRET,
+        code
+      );
+      if (!payload || payload.exp < Date.now()) {
+        return jsonResponse(
+          {
+            error: "invalid_grant",
+            error_description: "Invalid or expired authorization code",
+          },
+          400
+        );
+      }
+      if (payload.rd !== redirectUri) {
+        return jsonResponse(
+          {
+            error: "invalid_grant",
+            error_description: "redirect_uri does not match",
+          },
+          400
+        );
+      }
+      if (payload.cc) {
+        if (!codeVerifier) {
+          return jsonResponse(
+            {
+              error: "invalid_request",
+              error_description: "Missing code_verifier",
+            },
+            400
+          );
+        }
+        const ok = await verifyPKCE(
+          codeVerifier,
+          payload.cc,
+          payload.ccm || "S256"
+        );
+        if (!ok) {
+          return jsonResponse(
+            {
+              error: "invalid_grant",
+              error_description: "PKCE verification failed",
+            },
+            400
+          );
+        }
+      }
+
+      // Linkly issues no expires_in or refresh_token. Advertise a long TTL so
+      // MCP clients don't try to refresh prematurely; if the underlying token
+      // is rejected, the client will re-run the full auth flow.
+      return jsonResponse({
+        access_token: payload.at,
+        token_type: "Bearer",
+        expires_in: 60 * 60 * 24 * 365,
+        scope: "full_access",
+      });
+    }
+
+    // ------------------------------------------------------------------
+    // CORS preflight (browsers + some MCP clients send this)
+    // ------------------------------------------------------------------
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers":
+            "Authorization, Content-Type, Mcp-Session-Id, MCP-Protocol-Version",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
     }
 
     const apiKey = url.searchParams.get("apiKey") || "";
@@ -1964,9 +2261,18 @@ export default {
           const name = params?.name;
           const args = params?.arguments || {};
           if (request.headers.get("Authorization") === null) {
+            // RFC 9728 §5.1: WWW-Authenticate must point at the protected
+            // resource metadata so the MCP SDK can start the OAuth flow.
             return new Response(
               JSON.stringify(jsonRpcError(null, -32001, "Unauthenticated")),
-              { status: 401 }
+              {
+                status: 401,
+                headers: {
+                  "Content-Type": "application/json",
+                  "WWW-Authenticate": `Bearer error="invalid_token", error_description="No access token provided", resource_metadata="${SELF_ORIGIN}/.well-known/oauth-protected-resource"`,
+                  "Access-Control-Allow-Origin": "*",
+                },
+              }
             );
           }
 
@@ -1993,4 +2299,4 @@ export default {
 
     return new Response("Not found", { status: 404 });
   },
-} satisfies ExportedHandler<Env>;
+} satisfies ExportedHandler<Env & MCPEnv>;
