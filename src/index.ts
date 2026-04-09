@@ -1830,14 +1830,21 @@ export default {
       );
     }
 
+    // Authorize proxy — redirect to app.linklyhq.com with all params forwarded
+    if (url.pathname === "/authorize" && request.method === "GET") {
+      const target = new URL("https://app.linklyhq.com/oauth/authorize");
+      url.searchParams.forEach((value, key) => target.searchParams.set(key, value));
+      return Response.redirect(target.toString(), 302);
+    }
+
     if (
       url.pathname === "/.well-known/oauth-authorization-server" &&
       request.method === "GET"
     ) {
       return new Response(
         JSON.stringify({
-          issuer: "https://app.linklyhq.com",
-          authorization_endpoint: "https://app.linklyhq.com/oauth/authorize",
+          issuer: "https://mcp.linklyhq.com",
+          authorization_endpoint: "https://mcp.linklyhq.com/authorize",
           token_endpoint: "https://app.linklyhq.com/oauth/token",
           revocation_endpoint: "https://app.linklyhq.com/oauth/revoke",
 
