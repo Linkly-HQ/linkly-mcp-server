@@ -7,6 +7,48 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
+// ============================================================================
+// DEPRECATION NOTICE
+// ----------------------------------------------------------------------------
+// This self-hosted npm package is deprecated. All users should migrate to the
+// hosted MCP server at https://mcp.linklyhq.com — it uses OAuth instead of a
+// raw API key, receives new tools and bug fixes automatically, and requires
+// no install. This package will continue to run for backwards compatibility
+// but is no longer maintained.
+//
+// Migration is a one-line config change. Replace:
+//
+//   {
+//     "mcpServers": {
+//       "linkly": {
+//         "command": "npx",
+//         "args": ["linkly-mcp-server"],
+//         "env": { "LINKLY_API_KEY": "...", "LINKLY_WORKSPACE_ID": "..." }
+//       }
+//     }
+//   }
+//
+// With:
+//
+//   {
+//     "mcpServers": {
+//       "linkly": {
+//         "command": "npx",
+//         "args": ["-y", "mcp-remote", "https://mcp.linklyhq.com"]
+//       }
+//     }
+//   }
+//
+// See https://linklyhq.com/support/mcp-server for full instructions.
+// ============================================================================
+
+console.error(
+  "\n\u001b[33m⚠️  linkly-mcp-server (the self-hosted npm package) is deprecated.\u001b[0m\n" +
+    "   Migrate to the hosted server at \u001b[36mhttps://mcp.linklyhq.com\u001b[0m\n" +
+    "   (uses OAuth, no API key needed, always up to date).\n" +
+    "   Setup guide: https://linklyhq.com/support/mcp-server\n"
+);
+
 const API_BASE = "https://app.linklyhq.com";
 
 // Get credentials from environment
