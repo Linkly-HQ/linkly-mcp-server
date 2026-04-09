@@ -1837,6 +1837,27 @@ export default {
       return Response.redirect(target.toString(), 302);
     }
 
+    // Token proxy — forward POST to app.linklyhq.com/oauth/token
+    if (url.pathname === "/token" && request.method === "POST") {
+      const body = await request.text();
+      const tokenResponse = await fetch("https://app.linklyhq.com/oauth/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": request.headers.get("Content-Type") || "application/x-www-form-urlencoded",
+          ...(request.headers.get("Authorization") ? { "Authorization": request.headers.get("Authorization")! } : {}),
+        },
+        body,
+      });
+      const responseBody = await tokenResponse.text();
+      return new Response(responseBody, {
+        status: tokenResponse.status,
+        headers: {
+          "Content-Type": tokenResponse.headers.get("Content-Type") || "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    }
+
     if (
       url.pathname === "/.well-known/oauth-authorization-server" &&
       request.method === "GET"
@@ -1845,7 +1866,7 @@ export default {
         JSON.stringify({
           issuer: "https://mcp.linklyhq.com",
           authorization_endpoint: "https://mcp.linklyhq.com/authorize",
-          token_endpoint: "https://app.linklyhq.com/oauth/token",
+          token_endpoint: "https://mcp.linklyhq.com/token",
           revocation_endpoint: "https://app.linklyhq.com/oauth/revoke",
 
           response_types_supported: ["code"],
