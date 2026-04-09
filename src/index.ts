@@ -1822,7 +1822,7 @@ export default {
     ) {
       return new Response(
         JSON.stringify({
-          resource: "https://app.linklyhq.com",
+          resource: "https://mcp.linklyhq.com",
           authorization_servers: ["https://app.linklyhq.com"],
           scopes_supported: ["full_access"],
         }),
