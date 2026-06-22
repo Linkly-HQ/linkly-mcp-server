@@ -1,0 +1,17 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.linklyhq/linkly",
+  "description": "Create and manage short links, track clicks, and automate URL management",
+  "repository": {
+    "url": "https://github.com/Linkly-HQ/linkly-mcp-server",
+    "source": "github"
+  },
+  "websiteUrl": "https://linklyhq.com",
+  "version": "2.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.linklyhq.com"
+    }
+  ]
+}

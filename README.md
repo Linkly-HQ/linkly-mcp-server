@@ -93,6 +93,26 @@ claude mcp add --transport http linkly https://mcp.linklyhq.com
 
 For help and support, visit [Linkly Support](https://linklyhq.com/support) or email support@linklyhq.com.
 
+## Publishing to the MCP Registry (maintainers)
+
+The [`server.json`](server.json) at the repo root is the [official MCP Registry](https://registry.modelcontextprotocol.io) manifest for the `com.linklyhq/linkly` server. It is **remote-only**: it points clients at the hosted server and intentionally ships no package (the deprecated npm distribution was dropped in `v2.0.0`).
+
+Publishing requires DNS access to `linklyhq.com` — the `com.linklyhq` namespace is verified via a DNS TXT record on the domain apex:
+
+```bash
+# 1. Generate an Ed25519 key + TXT record (macOS: use openssl@3; system LibreSSL lacks Ed25519)
+openssl genpkey -algorithm Ed25519 -out key.pem
+PUBLIC_KEY="$(openssl pkey -in key.pem -pubout -outform DER | tail -c 32 | base64)"
+echo "linklyhq.com. IN TXT \"v=MCPv1; k=ed25519; p=${PUBLIC_KEY}\""   # add at the APEX of linklyhq.com
+
+# 2. Authenticate the namespace + publish
+PRIVATE_KEY="$(openssl pkey -in key.pem -noout -text | grep -A3 'priv:' | tail -n +2 | tr -d ' :\n')"
+mcp-publisher login dns --domain linklyhq.com --private-key "$PRIVATE_KEY"
+mcp-publisher publish
+```
+
+See the [registry authentication guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/authentication.mdx) for details.
+
 ## License
 
 MIT
