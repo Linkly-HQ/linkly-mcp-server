@@ -20,36 +20,96 @@ interface OAuthState {
 const LINK_OUTPUT = {
   type: "object",
   additionalProperties: true,
+  description: "A Linkly link (mirrors the OpenAPI Link schema)",
   properties: {
-    id: { type: "number", description: "Link ID" },
-    url: { type: "string", description: "Destination URL" },
-    name: { type: "string", description: "Link name" },
-    note: { type: "string" },
-    domain: { type: "string", description: "Short domain" },
-    slug: { type: "string", description: "Short-link slug" },
-    full_url: { type: "string", description: "Full short-link URL" },
-    enabled: { type: "boolean" },
-    clicks: { type: "number", description: "Total clicks" },
-    workspace_id: { type: "number" },
-    created_at: { type: "string" },
-    updated_at: { type: "string" },
+    id: { type: ["integer", "null"], description: "Link ID" },
+    url: { type: ["string", "null"], format: "uri", description: "Destination URL" },
+    full_url: { type: ["string", "null"], format: "uri", description: "Full short-link URL" },
+    domain: { type: ["string", "null"] },
+    slug: { type: ["string", "null"] },
+    name: { type: ["string", "null"] },
+    note: { type: ["string", "null"] },
+    workspace_id: { type: ["integer", "null"] },
+    created_by_user_id: { type: ["integer", "null"] },
+    enabled: { type: ["boolean", "null"] },
+    deleted: { type: ["boolean", "null"] },
+    cloaking: { type: ["boolean", "null"] },
+    forward_params: { type: ["boolean", "null"] },
+    hide_referrer: { type: ["boolean", "null"] },
+    block_bots: { type: ["boolean", "null"] },
+    public_analytics: { type: ["boolean", "null"] },
+    head_tags: { type: ["string", "null"] },
+    body_tags: { type: ["string", "null"] },
+    linkify_words: { type: ["string", "null"] },
+    replacements: { type: ["string", "null"] },
+    rules: {
+      type: ["array", "null"],
+      items: {
+        type: "object",
+        additionalProperties: true,
+        properties: {
+          what: { type: "string" },
+          url: { type: "string" },
+          rule_url: { type: "string" },
+          matches: { type: "string" },
+          percentage: { type: "string" },
+        },
+      },
+    },
+    utm_source: { type: ["string", "null"] },
+    utm_medium: { type: ["string", "null"] },
+    utm_campaign: { type: ["string", "null"] },
+    utm_term: { type: ["string", "null"] },
+    utm_content: { type: ["string", "null"] },
+    og_title: { type: ["string", "null"] },
+    og_description: { type: ["string", "null"] },
+    og_image: { type: ["string", "null"] },
+    fb_pixel_id: { type: ["string", "null"] },
+    tiktok_pixel_id: { type: ["string", "null"] },
+    linkedin_partner_id: { type: ["string", "null"] },
+    twitter_pixel_id: { type: ["string", "null"] },
+    pinterest_tag_id: { type: ["string", "null"] },
+    microsoft_uet_tag_id: { type: ["string", "null"] },
+    snapchat_pixel_id: { type: ["string", "null"] },
+    reddit_pixel_id: { type: ["string", "null"] },
+    gtm_id: { type: ["string", "null"] },
+    ga4_tag_id: { type: ["string", "null"] },
+    expiry_datetime: { type: ["string", "null"] },
+    expiry_destination: { type: ["string", "null"], format: "uri" },
+    expiry_clicks: { type: ["integer", "null"] },
+    skip_social_crawler_tracking: { type: ["boolean", "null"] },
+    password: { type: ["string", "null"] },
+    qr_styles: { type: ["object", "null"], additionalProperties: true },
+    webhooks: { type: ["array", "null"], items: { type: "string" } },
+    notify_user_ids: { type: ["array", "null"], items: { type: "integer" } },
+    notify_slack: { type: ["boolean", "null"] },
   },
 };
 
-const LINKS_OUTPUT = {
+const DOMAIN_OUTPUT = {
   type: "object",
   additionalProperties: true,
-  required: ["results"],
-  properties: { results: { type: "array", items: LINK_OUTPUT } },
+  description: "A custom domain (mirrors the OpenAPI Domain schema)",
+  properties: {
+    name: { type: ["string", "null"] },
+    workspace_id: { type: ["integer", "null"] },
+  },
 };
 
-const LIST_OUTPUT = {
+const WORKSPACE_OUTPUT = {
   type: "object",
   additionalProperties: true,
-  required: ["results"],
-  properties: { results: { type: "array" } },
+  properties: {
+    id: { type: "integer", description: "Workspace ID" },
+    name: { type: "string", description: "Workspace name" },
+  },
 };
 
+const LINKS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: LINK_OUTPUT } } };
+const DOMAINS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: DOMAIN_OUTPUT } } };
+const WORKSPACES_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: WORKSPACE_OUTPUT } } };
+const WEBHOOKS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: { type: "string", format: "uri" } } } };
+const CLICKS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], description: "Time-series click data", properties: { results: { type: "array" } } };
 const OBJECT_OUTPUT = { type: "object", additionalProperties: true };
 
 function toolResult(id: any, result: any) {
@@ -102,7 +162,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
-    outputSchema: LIST_OUTPUT,
+    outputSchema: WORKSPACES_OUTPUT,
   },
   {
     name: "batchDeleteLinks",
@@ -458,7 +518,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
-    outputSchema: LIST_OUTPUT,
+    outputSchema: CLICKS_OUTPUT,
   },
   {
     name: "get_analytics",
@@ -622,7 +682,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
-    outputSchema: LIST_OUTPUT,
+    outputSchema: CLICKS_OUTPUT,
   },
   // Domain Management
   {
@@ -640,7 +700,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
-    outputSchema: LIST_OUTPUT,
+    outputSchema: DOMAINS_OUTPUT,
   },
   {
     name: "create_domain",
@@ -663,7 +723,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
-    outputSchema: OBJECT_OUTPUT,
+    outputSchema: DOMAIN_OUTPUT,
   },
   {
     name: "delete_domain",
@@ -755,7 +815,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
-    outputSchema: LIST_OUTPUT,
+    outputSchema: WEBHOOKS_OUTPUT,
   },
   {
     name: "subscribe_webhook",
@@ -822,7 +882,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
-    outputSchema: LIST_OUTPUT,
+    outputSchema: WEBHOOKS_OUTPUT,
   },
   {
     name: "subscribe_link_webhook",
