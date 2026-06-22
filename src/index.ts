@@ -17,6 +17,58 @@ interface OAuthState {
   scopes?: string[];
 }
 
+const LINK_OUTPUT = {
+  type: "object",
+  additionalProperties: true,
+  properties: {
+    id: { type: "number", description: "Link ID" },
+    url: { type: "string", description: "Destination URL" },
+    name: { type: "string", description: "Link name" },
+    note: { type: "string" },
+    domain: { type: "string", description: "Short domain" },
+    slug: { type: "string", description: "Short-link slug" },
+    full_url: { type: "string", description: "Full short-link URL" },
+    enabled: { type: "boolean" },
+    clicks: { type: "number", description: "Total clicks" },
+    workspace_id: { type: "number" },
+    created_at: { type: "string" },
+    updated_at: { type: "string" },
+  },
+};
+
+const LINKS_OUTPUT = {
+  type: "object",
+  additionalProperties: true,
+  required: ["results"],
+  properties: { results: { type: "array", items: LINK_OUTPUT } },
+};
+
+const LIST_OUTPUT = {
+  type: "object",
+  additionalProperties: true,
+  required: ["results"],
+  properties: { results: { type: "array" } },
+};
+
+const OBJECT_OUTPUT = { type: "object", additionalProperties: true };
+
+function toolResult(id: any, result: any) {
+  const structuredContent =
+    result && typeof result === "object" && !Array.isArray(result)
+      ? result
+      : { results: result };
+  return new Response(
+    JSON.stringify(
+      jsonRpcResponse(id, {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        structuredContent,
+        isError: false,
+      })
+    ),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}
+
 const TOOLS = [
   {
     name: "test_authentication",
@@ -33,6 +85,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "list_workspaces",
@@ -49,6 +102,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LIST_OUTPUT,
   },
   {
     name: "batchDeleteLinks",
@@ -73,6 +127,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "update_workspace",
@@ -98,6 +153,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "list_links",
@@ -134,6 +190,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LINKS_OUTPUT,
   },
   {
     name: "ping",
@@ -265,6 +322,7 @@ const TOOLS = [
       },
       required: ["url"],
     },
+    outputSchema: LINK_OUTPUT,
   },
   {
     name: "update_link",
@@ -334,6 +392,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: LINK_OUTPUT,
   },
   {
     name: "delete_link",
@@ -355,6 +414,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "get_link",
@@ -376,6 +436,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LINK_OUTPUT,
   },
   {
     name: "get_clicks",
@@ -397,6 +458,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LIST_OUTPUT,
   },
   {
     name: "get_analytics",
@@ -454,6 +516,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "get_analytics_by",
@@ -515,6 +578,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "export_clicks",
@@ -558,6 +622,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LIST_OUTPUT,
   },
   // Domain Management
   {
@@ -575,6 +640,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LIST_OUTPUT,
   },
   {
     name: "create_domain",
@@ -597,6 +663,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "delete_domain",
@@ -618,6 +685,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "update_domain_favicon",
@@ -643,6 +711,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   // Link Search
   {
@@ -667,6 +736,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LINKS_OUTPUT,
   },
   // Workspace Webhooks
   {
@@ -685,6 +755,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LIST_OUTPUT,
   },
   {
     name: "subscribe_webhook",
@@ -707,6 +778,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "unsubscribe_webhook",
@@ -750,6 +822,7 @@ const TOOLS = [
       idempotentHint: true,
       destructiveHint: false,
     },
+    outputSchema: LIST_OUTPUT,
   },
   {
     name: "subscribe_link_webhook",
@@ -776,6 +849,7 @@ const TOOLS = [
       idempotentHint: false,
       destructiveHint: true,
     },
+    outputSchema: OBJECT_OUTPUT,
   },
   {
     name: "unsubscribe_link_webhook",
@@ -900,20 +974,7 @@ async function handleToolCall(
     }
     case "test_authentication": {
       const result = await apiRequest(token, "POST", "/api/v1/test");
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "update_workspace": {
       const workspaceID = (await apiRequest(
@@ -927,20 +988,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}`,
         args
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "create_link": {
       const workspaceID = (await apiRequest(
@@ -954,21 +1002,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/links`,
         args
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "update_link": {
       const { link_id, ...updateData } = args;
@@ -983,20 +1017,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/links`,
         { id: link_id, ...updateData }
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "list_links": {
       const workspaceID = (await apiRequest(
@@ -1010,20 +1031,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/list_links`,
         args
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "batchDeleteLinks": {
       const workspaceID = (await apiRequest(
@@ -1037,20 +1045,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/links`,
         args
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "delete_link": {
       const workspaceID = (await apiRequest(
@@ -1063,20 +1058,7 @@ async function handleToolCall(
         "DELETE",
         `/api/v1/workspace/${workspaceID[0].id}/links/${args.link_id}`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "get_link": {
       const result = await apiRequest(
@@ -1084,37 +1066,11 @@ async function handleToolCall(
         "GET",
         `/api/v1/get_link/${args.link_id}`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "list_workspaces": {
       const result = await apiRequest(token, "GET", `/api/v1/workspaces`);
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "get_clicks": {
       const params = new URLSearchParams();
@@ -1131,20 +1087,7 @@ async function handleToolCall(
 
       const result = await apiRequest(token, "GET", url);
 
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "get_analytics": {
       const params = new URLSearchParams();
@@ -1169,20 +1112,7 @@ async function handleToolCall(
       }`;
       const result = await apiRequest(token, "GET", url);
 
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "get_analytics_by": {
       const params = new URLSearchParams();
@@ -1205,20 +1135,7 @@ async function handleToolCall(
       }?${params.toString()}`;
       const result = await apiRequest(token, "GET", url);
 
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "export_clicks": {
       const params = new URLSearchParams();
@@ -1239,20 +1156,7 @@ async function handleToolCall(
         workspaceID[0].id
       }/clicks/export?${params.toString()}`;
       const result = await apiRequest(token, "GET", url);
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
 
     // Domain Management
@@ -1267,20 +1171,7 @@ async function handleToolCall(
         "GET",
         `/api/v1/workspace/${workspaceID[0].id}/domains`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "create_domain": {
       const workspaceID = (await apiRequest(
@@ -1294,20 +1185,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/domains`,
         { name: args.name }
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "delete_domain": {
       const workspaceID = (await apiRequest(
@@ -1320,20 +1198,7 @@ async function handleToolCall(
         "DELETE",
         `/api/v1/workspace/${workspaceID[0].id}/domains/${args.domain_id}`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "update_domain_favicon": {
       const workspaceID = (await apiRequest(
@@ -1347,20 +1212,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/domains/${args.domain_id}/favicon`,
         { favicon_url: args.favicon_url }
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
 
     // Link Search
@@ -1379,20 +1231,7 @@ async function handleToolCall(
           workspaceID[0].id
         }/links/export?${params.toString()}`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
 
     // Workspace Webhooks
@@ -1407,20 +1246,7 @@ async function handleToolCall(
         "GET",
         `/api/v1/workspace/${workspaceID[0].id}/webhooks`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "subscribe_webhook": {
       const workspaceID = (await apiRequest(
@@ -1434,20 +1260,7 @@ async function handleToolCall(
         `/api/v1/workspace/${workspaceID[0].id}/webhooks`,
         { url: args.url }
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "unsubscribe_webhook": {
       const workspaceID = (await apiRequest(
@@ -1483,20 +1296,7 @@ async function handleToolCall(
         "GET",
         `/api/v1/link/${args.link_id}/webhooks`
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "subscribe_link_webhook": {
       const result = await apiRequest(
@@ -1505,20 +1305,7 @@ async function handleToolCall(
         `/api/v1/link/${args.link_id}/webhooks`,
         { url: args.url }
       );
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
+      return toolResult(id, result);
     }
     case "unsubscribe_link_webhook": {
       const encodedUrl = encodeURIComponent(`${args.url}`);
