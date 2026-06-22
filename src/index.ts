@@ -27,6 +27,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "Test authentication",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -42,6 +43,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "Get workspace details",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -65,6 +67,7 @@ const TOOLS = [
       required: ["ids"],
     },
     annotations: {
+      title: "Batch delete links",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
@@ -88,6 +91,7 @@ const TOOLS = [
       },
     },
     annotations: {
+      title: "List links (paginated)",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -107,6 +111,7 @@ const TOOLS = [
       required: ["link_id"],
     },
     annotations: {
+      title: "Get link details",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -154,10 +159,11 @@ const TOOLS = [
       required: ["url"],
     },
     annotations: {
+      title: "Create or update link",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -178,10 +184,11 @@ const TOOLS = [
       required: ["name", "webhooks"],
     },
     annotations: {
+      title: "Update workspace settings",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -213,6 +220,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "List links (advanced)",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -233,6 +241,7 @@ const TOOLS = [
       required: ["message"],
     },
     annotations: {
+      title: "Ping server",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -244,10 +253,11 @@ const TOOLS = [
     description:
       "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
     annotations: {
+      title: "Create short link",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
     inputSchema: {
       type: "object",
@@ -410,10 +420,11 @@ const TOOLS = [
       required: ["link_id"],
     },
     annotations: {
+      title: "Update link",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -430,6 +441,7 @@ const TOOLS = [
       required: ["link_id"],
     },
     annotations: {
+      title: "Delete link",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
@@ -450,6 +462,7 @@ const TOOLS = [
       required: ["link_id"],
     },
     annotations: {
+      title: "Get link details",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -466,6 +479,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "List links",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -486,6 +500,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "Get recent clicks",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -542,6 +557,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "Get click analytics",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -602,6 +618,7 @@ const TOOLS = [
       required: ["counter"],
     },
     annotations: {
+      title: "Get analytics by dimension",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -644,6 +661,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "Export click records",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -660,6 +678,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "List custom domains",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -681,10 +700,11 @@ const TOOLS = [
       required: ["name"],
     },
     annotations: {
+      title: "Add custom domain",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -701,6 +721,7 @@ const TOOLS = [
       required: ["domain_id"],
     },
     annotations: {
+      title: "Delete custom domain",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
@@ -725,10 +746,11 @@ const TOOLS = [
       required: ["domain_id", "favicon_url"],
     },
     annotations: {
+      title: "Update domain favicon",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: true,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   // Link Search
@@ -748,6 +770,7 @@ const TOOLS = [
       required: ["query"],
     },
     annotations: {
+      title: "Search links",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -765,6 +788,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
+      title: "List webhooks",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -786,10 +810,11 @@ const TOOLS = [
       required: ["url"],
     },
     annotations: {
+      title: "Add workspace webhook",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -806,6 +831,7 @@ const TOOLS = [
       required: ["url"],
     },
     annotations: {
+      title: "Remove workspace webhook",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
@@ -827,6 +853,7 @@ const TOOLS = [
       required: ["link_id"],
     },
     annotations: {
+      title: "List link webhooks",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -852,10 +879,11 @@ const TOOLS = [
       required: ["link_id", "url"],
     },
     annotations: {
+      title: "Add link webhook",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
-      destructiveHint: false,
+      destructiveHint: true,
     },
   },
   {
@@ -877,6 +905,7 @@ const TOOLS = [
       required: ["link_id", "url"],
     },
     annotations: {
+      title: "Remove link webhook",
       openWorldHint: true,
       readOnlyHint: false,
       idempotentHint: false,
