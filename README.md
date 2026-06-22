@@ -113,6 +113,20 @@ mcp-publisher publish
 
 See the [registry authentication guide](https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/authentication.mdx) for details.
 
+## Updating the ChatGPT app (maintainers)
+
+[`chatgpt-app-submission.json`](chatgpt-app-submission.json) is the OpenAI [Apps SDK submission import](https://developers.openai.com/apps-sdk/schemas/chatgpt-app-submission.v1.json) — it pre-fills the per-tool annotations and the three safety **justifications** (read-only / open-world / destructive) for all 25 tools, so they don't have to be typed by hand in the dashboard.
+
+OpenAI freezes a metadata **snapshot** at publish time and does **not** auto-detect MCP changes, so after deploying server changes you publish a new version:
+
+1. Deploy the worker (push to the connected branch / `wrangler deploy`).
+2. [Platform dashboard](https://platform.openai.com/apps-manage) → the Linkly app → **create a new draft version** (keep the same MCP URL `https://mcp.linklyhq.com`).
+3. In the **MCP** section, click **Scan Tools** to re-read the live tool list + annotations.
+4. Drag `chatgpt-app-submission.json` onto the form (top of the page) to fill the justifications.
+5. Review **Testing**, then **Submit**. The published version keeps running against the live server until the new one is approved.
+
+Keep this file in sync with the worker whenever tools are added/removed or their `readOnlyHint`/`destructiveHint` change. The destructive flag is `true` only for the 5 genuinely destructive tools (`delete_link`, `delete_domain`, `batchDeleteLinks`, `unsubscribe_webhook`, `unsubscribe_link_webhook`); creates/updates/subscribes are additive (`false`).
+
 ## License
 
 MIT
