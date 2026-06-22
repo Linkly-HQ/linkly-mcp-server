@@ -75,98 +75,6 @@ const TOOLS = [
     },
   },
   {
-    name: "list_links_paginated",
-    description: "List links with pagination",
-    inputSchema: {
-      type: "object",
-      properties: {
-        page: {
-          type: "integer",
-          description: "Page number",
-        },
-        page_size: {
-          type: "integer",
-          description: "Items per page",
-        },
-      },
-    },
-    annotations: {
-      title: "List links (paginated)",
-      openWorldHint: true,
-      readOnlyHint: true,
-      idempotentHint: true,
-      destructiveHint: false,
-    },
-  },
-  {
-    name: "get_link_OAuth",
-    description: "Get link details (OAuth flow)",
-    inputSchema: {
-      type: "object",
-      properties: {
-        link_id: {
-          type: "integer",
-        },
-      },
-      required: ["link_id"],
-    },
-    annotations: {
-      title: "Get link details",
-      openWorldHint: true,
-      readOnlyHint: true,
-      idempotentHint: true,
-      destructiveHint: false,
-    },
-  },
-  {
-    name: "create_or_update_linkOAuth",
-    description: "Create or update a link (OAuth flow)",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: {
-          type: "integer",
-          description: "Link ID (include to update existing link)",
-        },
-        url: {
-          type: "string",
-          description: "The destination URL",
-        },
-        name: { type: "string", description: "Nickname for the link" },
-        note: {
-          type: "string",
-          description: "Private note about this link",
-        },
-        domain: {
-          type: "string",
-          description: "Custom domain (without trailing /)",
-        },
-        domain_id: {
-          type: "integer",
-          description: "Domain ID (alternative to domain name)",
-        },
-        slug: {
-          type: "string",
-          description: "Custom slug (must start with /)",
-        },
-        enabled: { type: "boolean", description: "Whether the link is active" },
-        utm_source: { type: "string" },
-        utm_medium: { type: "string" },
-        utm_campaign: { type: "string" },
-        utm_term: { type: "string" },
-        utm_content: { type: "string" },
-      },
-      required: ["url"],
-    },
-    annotations: {
-      title: "Create or update link",
-      openWorldHint: true,
-      readOnlyHint: false,
-      idempotentHint: false,
-      destructiveHint: true,
-    },
-  },
-  {
     name: "update_workspace",
     description: "Update workspace settings",
     inputSchema: {
@@ -192,7 +100,7 @@ const TOOLS = [
     },
   },
   {
-    name: "list_links_advanced",
+    name: "list_links",
     description: "List links with sorting and search",
     inputSchema: {
       type: "object",
@@ -220,7 +128,7 @@ const TOOLS = [
       required: [],
     },
     annotations: {
-      title: "List links (advanced)",
+      title: "List links",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -463,23 +371,6 @@ const TOOLS = [
     },
     annotations: {
       title: "Get link details",
-      openWorldHint: true,
-      readOnlyHint: true,
-      idempotentHint: true,
-      destructiveHint: false,
-    },
-  },
-  {
-    name: "list_links",
-    description:
-      "List all links in the workspace. Returns links with click statistics.",
-    inputSchema: {
-      type: "object",
-      properties: {},
-      required: [],
-    },
-    annotations: {
-      title: "List links",
       openWorldHint: true,
       readOnlyHint: true,
       idempotentHint: true,
@@ -1051,69 +942,6 @@ async function handleToolCall(
         { headers: { "Content-Type": "application/json" } }
       );
     }
-    case "list_links_paginated": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
-      const result = await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspace/${workspaceID[0].id}/links`
-      );
-
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
-    case "get_link_OAuth": {
-      const { link_id } = args;
-      const result = await apiRequest(token, "GET", `/api/v1/link/${link_id}`);
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
-    case "create_or_update_linkOAuth": {
-      const result = await apiRequest(token, "POST", "/api/v1/link", args);
-
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
     case "create_link": {
       const workspaceID = (await apiRequest(
         token,
@@ -1170,7 +998,7 @@ async function handleToolCall(
         { headers: { "Content-Type": "application/json" } }
       );
     }
-    case "list_links_advanced": {
+    case "list_links": {
       const workspaceID = (await apiRequest(
         token,
         "GET",
@@ -1273,32 +1101,6 @@ async function handleToolCall(
     }
     case "list_workspaces": {
       const result = await apiRequest(token, "GET", `/api/v1/workspaces`);
-      return new Response(
-        JSON.stringify(
-          jsonRpcResponse(id, {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(result, null, 2),
-              },
-            ],
-            isError: false,
-          })
-        ),
-        { headers: { "Content-Type": "application/json" } }
-      );
-    }
-    case "list_links": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
-      const result = await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspace/${workspaceID[0].id}/links/export`
-      );
       return new Response(
         JSON.stringify(
           jsonRpcResponse(id, {
