@@ -2092,7 +2092,9 @@ export default {
                 },
                 serverInfo: {
                   name: "linkly",
+                  title: "Linkly",
                   version: "1.0.0",
+                  websiteUrl: "https://linklyhq.com",
                   icons: [
                     { src: "https://mcp.linklyhq.com/icons/icon-16x16.png", mimeType: "image/png", size: "16x16" },
                     { src: "https://mcp.linklyhq.com/icons/icon-32x32.png", mimeType: "image/png", size: "32x32" },
@@ -2102,6 +2104,8 @@ export default {
                     { src: "https://mcp.linklyhq.com/icons/icon-256x256.png", mimeType: "image/png", size: "256x256" },
                   ],
                 },
+                instructions:
+                  "Linkly is a link-management and analytics platform. Use these tools to create, update, search, and delete short links; manage custom domains and favicons; configure click webhooks; and read click analytics and exports for the authenticated user's workspace. All actions run against the current OAuth-authenticated workspace (see list_workspaces). Find a link's id with search_links or list_links before calling get_link, update_link, or delete_link.",
               })
             ),
             { headers: { "Content-Type": "application/json" } }
