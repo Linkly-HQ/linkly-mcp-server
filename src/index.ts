@@ -2093,7 +2093,7 @@ export default {
                 serverInfo: {
                   name: "linkly",
                   title: "Linkly",
-                  version: "1.0.0",
+                  version: "2.0.0",
                   websiteUrl: "https://linklyhq.com",
                   icons: [
                     { src: "https://mcp.linklyhq.com/icons/icon-16x16.png", mimeType: "image/png", size: "16x16" },
