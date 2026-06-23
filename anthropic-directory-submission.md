@@ -101,15 +101,21 @@ browser opens. No API keys, no installation.
 
 ---
 
-## Reviewer test account  `<FILL IN>`
+## Reviewer test account
 
-Anthropic reviewers functionally test **every** tool, so the account must be populated.
+A dedicated, **isolated** test account is pre-configured. It belongs to **one** throwaway workspace
+only and has no admin rights — it cannot see or affect any production / customer data.
 
-- **Sign-in:** non-expiring magic link to a pre-populated test workspace — `<MAGIC LINK URL>`
-- **Pre-populated with:** `<N>` short links across `<N>` domains (incl. one custom domain), recent click history,
-  and at least one webhook subscription.
-- **Reviewer steps:** add the connector (`https://mcp.linklyhq.com`) → click connect → the OAuth window opens
-  already signed in via the magic link → Authorize the test workspace → all 25 tools become available.
+- **Sign-in (no magic link, no password):** open **https://app.linklyhq.com**, type the
+  **dedicated reviewer email** (provided in this form's test-account field) into the "Sign in with
+  email" box, and submit. You are logged straight into the test workspace — there is no email
+  round-trip or magic-link step for this account.
+- **Connecting the MCP in Claude:** add a custom connector pointing at **`https://mcp.linklyhq.com`** and
+  click connect. When the Linkly OAuth window opens, sign in with the same reviewer email if
+  prompted, then **Authorize** the test workspace — all 25 tools become available.
+- **Pre-populated with:** 8 short links and recent click history (~23 clicks across varied
+  devices / countries) in the test workspace. Webhooks are enabled on the plan, so the webhook tools
+  (`subscribe_webhook`, `list_webhooks`, …) can be exercised live during the review.
 
 ---
 
