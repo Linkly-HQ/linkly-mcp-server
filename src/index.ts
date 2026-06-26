@@ -105,11 +105,11 @@ const WORKSPACE_OUTPUT = {
   },
 };
 
-const LINKS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: LINK_OUTPUT } } };
-const DOMAINS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: DOMAIN_OUTPUT } } };
-const WORKSPACES_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: WORKSPACE_OUTPUT } } };
-const WEBHOOKS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], properties: { results: { type: "array", items: { type: "string", format: "uri" } } } };
-const CLICKS_OUTPUT = { type: "object", additionalProperties: true, required: ["results"], description: "Time-series click data", properties: { results: { type: "array" } } };
+const LINKS_OUTPUT = { type: "object", additionalProperties: true, properties: { results: { type: "array", items: LINK_OUTPUT } } };
+const DOMAINS_OUTPUT = { type: "object", additionalProperties: true, properties: { results: { type: "array", items: DOMAIN_OUTPUT } } };
+const WORKSPACES_OUTPUT = { type: "object", additionalProperties: true, properties: { results: { type: "array", items: WORKSPACE_OUTPUT } } };
+const WEBHOOKS_OUTPUT = { type: "object", additionalProperties: true, properties: { results: { type: "array", items: { type: "string", format: "uri" } } } };
+const CLICKS_OUTPUT = { type: "object", additionalProperties: true, description: "Time-series click data", properties: { results: { type: "array" } } };
 const OBJECT_OUTPUT = { type: "object", additionalProperties: true };
 
 function toolResult(id: any, result: any) {
