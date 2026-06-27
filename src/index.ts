@@ -1085,11 +1085,18 @@ async function handleToolCall(
         "GET",
         `/api/v1/workspaces`
       )) as { id: number; name: string }[];
+      const listParams = new URLSearchParams();
+      for (const k of ["page", "page_size", "search", "sort_by", "sort_dir"]) {
+        if (args[k] !== undefined && args[k] !== null)
+          listParams.append(k, `${args[k]}`);
+      }
+      const listQs = listParams.toString();
       const result = await apiRequest(
         token,
         "GET",
-        `/api/v1/workspace/${workspaceID[0].id}/list_links`,
-        args
+        `/api/v1/workspace/${workspaceID[0].id}/list_links${
+          listQs ? `?${listQs}` : ""
+        }`
       );
       return toolResult(id, result);
     }
