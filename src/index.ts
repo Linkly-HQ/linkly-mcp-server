@@ -1086,10 +1086,13 @@ async function handleToolCall(
         `/api/v1/workspaces`
       )) as { id: number; name: string }[];
       const listParams = new URLSearchParams();
-      for (const k of ["page", "page_size", "search", "sort_by", "sort_dir"]) {
-        if (args[k] !== undefined && args[k] !== null)
-          listParams.append(k, `${args[k]}`);
-      }
+      if (args.page != null) listParams.append("page", `${args.page}`);
+      if (args.page_size != null)
+        listParams.append("page_size", `${args.page_size}`);
+      if (args.search != null) listParams.append("search", `${args.search}`);
+      if (args.sort_by != null) listParams.append("sort_by", `${args.sort_by}`);
+      if (args.sort_dir != null)
+        listParams.append("sort_dir", `${args.sort_dir}`);
       const listQs = listParams.toString();
       const result = await apiRequest(
         token,
