@@ -174,12 +174,12 @@
       "annotations": {
         "readOnlyHint": false,
         "openWorldHint": true,
-        "destructiveHint": false
+        "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "modifies an existing link",
         "open_world_justification": "sends an update request to the Linkly API",
-        "destructive_justification": "no data is permanently destroyed"
+        "destructive_justification": "Overwrites fields on an existing link (such as its destination URL, slug, and settings), replacing the previous values in place — a destructive update, not additive."
       }
     },
     "create_domain": {
@@ -198,24 +198,24 @@
       "annotations": {
         "readOnlyHint": false,
         "openWorldHint": true,
-        "destructiveHint": false
+        "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "updates the favicon URL on a domain",
         "open_world_justification": "sends an update request to the Linkly API",
-        "destructive_justification": "no data is permanently destroyed"
+        "destructive_justification": "Replaces the existing favicon of a custom domain, overwriting the previous one — a destructive in-place update, not additive."
       }
     },
     "update_workspace": {
       "annotations": {
         "readOnlyHint": false,
         "openWorldHint": true,
-        "destructiveHint": false
+        "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "modifies workspace settings",
         "open_world_justification": "sends an update request to the Linkly API",
-        "destructive_justification": "no data is permanently destroyed"
+        "destructive_justification": "Overwrites existing workspace settings, replacing prior values in place — a destructive update, not additive."
       }
     },
     "subscribe_webhook": {
