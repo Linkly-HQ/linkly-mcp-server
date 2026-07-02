@@ -140,7 +140,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Test authentication",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -157,7 +157,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Get workspace details",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -182,7 +182,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Batch delete links",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
@@ -208,7 +208,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Update workspace settings",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
@@ -245,7 +245,7 @@ const TOOLS = [
     },
     annotations: {
       title: "List links",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -267,7 +267,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Ping server",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -279,7 +279,7 @@ const TOOLS = [
       "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
     annotations: {
       title: "Create short link",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: false,
@@ -447,7 +447,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Update link",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
@@ -469,7 +469,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Delete link",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
@@ -491,7 +491,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Get link details",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -513,7 +513,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Get recent clicks",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -571,7 +571,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Get click analytics",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -633,7 +633,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Get analytics by dimension",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -677,7 +677,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Export click records",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -695,7 +695,7 @@ const TOOLS = [
     },
     annotations: {
       title: "List custom domains",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -718,7 +718,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Add custom domain",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: false,
@@ -740,7 +740,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Delete custom domain",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
@@ -766,7 +766,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Update domain favicon",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: true,
       destructiveHint: true,
@@ -791,7 +791,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Search links",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -810,7 +810,7 @@ const TOOLS = [
     },
     annotations: {
       title: "List webhooks",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -833,7 +833,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Add workspace webhook",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: false,
@@ -855,7 +855,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Remove workspace webhook",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
@@ -877,7 +877,7 @@ const TOOLS = [
     },
     annotations: {
       title: "List link webhooks",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: true,
       idempotentHint: true,
       destructiveHint: false,
@@ -904,7 +904,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Add link webhook",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: false,
@@ -931,7 +931,7 @@ const TOOLS = [
     },
     annotations: {
       title: "Remove link webhook",
-      openWorldHint: true,
+      openWorldHint: false,
       readOnlyHint: false,
       idempotentHint: false,
       destructiveHint: true,
