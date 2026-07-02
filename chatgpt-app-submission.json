@@ -5,300 +5,300 @@
     "test_authentication": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "only verifies token validity, no data is written",
-        "open_world_justification": "makes a live request to the Linkly API to validate credentials",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "ping": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "health check only, no writes",
-        "open_world_justification": "makes a live request to the Linkly API to confirm connectivity",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "list_workspaces": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches workspace info only",
-        "open_world_justification": "calls the Linkly API to retrieve workspace data",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "get_link": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches a single link record",
-        "open_world_justification": "calls the Linkly API to retrieve the link",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "list_links": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches links with optional filters, no writes",
-        "open_world_justification": "calls the Linkly API to retrieve links",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "search_links": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "queries links by keyword, no writes",
-        "open_world_justification": "calls the Linkly API to search across link records",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "get_clicks": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches click count data only",
-        "open_world_justification": "calls the Linkly API to retrieve click stats",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "get_analytics": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches analytics data only",
-        "open_world_justification": "calls the Linkly API to retrieve analytics",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "get_analytics_by": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches analytics grouped by a dimension",
-        "open_world_justification": "calls the Linkly API with grouping params",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "export_clicks": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "reads and exports click data, no writes",
-        "open_world_justification": "calls the Linkly API to pull exportable click records",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "list_domains": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches the list of domains only",
-        "open_world_justification": "calls the Linkly API to retrieve domains",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "list_webhooks": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches workspace webhooks only",
-        "open_world_justification": "calls the Linkly API to retrieve webhook subscriptions",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "list_link_webhooks": {
       "annotations": {
         "readOnlyHint": true,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "fetches webhooks for a specific link only",
-        "open_world_justification": "calls the Linkly API to retrieve link-scoped webhook subscriptions",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "nothing is modified or deleted"
       }
     },
     "create_link": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "creates a new link record",
-        "open_world_justification": "sends a create request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "no data is permanently destroyed"
       }
     },
     "update_link": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "modifies an existing link",
-        "open_world_justification": "sends an update request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "Overwrites fields on an existing link (such as its destination URL, slug, and settings), replacing the previous values in place — a destructive update, not additive."
       }
     },
     "create_domain": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "registers a new domain",
-        "open_world_justification": "sends a create request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "no data is permanently destroyed"
       }
     },
     "update_domain_favicon": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "updates the favicon URL on a domain",
-        "open_world_justification": "sends an update request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "Replaces the existing favicon of a custom domain, overwriting the previous one — a destructive in-place update, not additive."
       }
     },
     "update_workspace": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "modifies workspace settings",
-        "open_world_justification": "sends an update request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "Overwrites existing workspace settings, replacing prior values in place — a destructive update, not additive."
       }
     },
     "subscribe_webhook": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "registers a new webhook subscription",
-        "open_world_justification": "sends a create request to the Linkly API and affects an external endpoint",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "no data is permanently destroyed"
       }
     },
     "subscribe_link_webhook": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": false
       },
       "justifications": {
         "read_only_justification": "registers a new webhook on a specific link",
-        "open_world_justification": "sends a create request to the Linkly API and affects an external endpoint",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "no data is permanently destroyed"
       }
     },
     "delete_link": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "permanently removes a link",
-        "open_world_justification": "sends a delete request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "the link is gone permanently and cannot be recovered"
       }
     },
     "delete_domain": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "permanently removes a domain",
-        "open_world_justification": "sends a delete request to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "the domain is gone permanently and its associated links may stop working"
       }
     },
     "batchDeleteLinks": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "permanently removes multiple links",
-        "open_world_justification": "sends delete requests to the Linkly API",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "the links are gone permanently and cannot be recovered"
       }
     },
     "unsubscribe_webhook": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "removes a webhook subscription",
-        "open_world_justification": "sends a delete request to the Linkly API and stops delivery",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "the subscription is permanently removed"
       }
     },
     "unsubscribe_link_webhook": {
       "annotations": {
         "readOnlyHint": false,
-        "openWorldHint": true,
+        "openWorldHint": false,
         "destructiveHint": true
       },
       "justifications": {
         "read_only_justification": "removes a webhook from a specific link",
-        "open_world_justification": "sends a delete request to the Linkly API and stops delivery",
+        "open_world_justification": "This tool interacts only with the user's own authenticated Linkly workspace through the first-party Linkly API. Its domain of interaction is closed and bounded — the user's own account data (links, domains, click analytics, webhooks) — not an open or unbounded set of external web entities, so openWorldHint is false.",
         "destructive_justification": "the subscription is permanently removed"
       }
     }
