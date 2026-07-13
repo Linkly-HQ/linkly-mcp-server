@@ -1558,6 +1558,25 @@ export default {
   async fetch(request: Request, env: MCPEnv): Promise<Response> {
     const url = new URL(request.url);
 
+    // Fail loud if the upstream OAuth credentials are missing, instead of
+    // silently forwarding `client_id=undefined` to Linkly (which returns
+    // invalid_client and looks like an upstream fault). This masked a 3-week
+    // outage in June 2026 after the creds were moved from hardcoded to env
+    // but never set on the deployment. A 500 here surfaces in observability.
+    if (
+      (url.pathname === "/authorize" || url.pathname === CALLBACK_PATH) &&
+      (!env.LINKLY_CLIENT_ID || !env.LINKLY_CLIENT_SECRET)
+    ) {
+      return jsonResponse(
+        {
+          error: "server_error",
+          error_description:
+            "MCP OAuth is misconfigured: LINKLY_CLIENT_ID / LINKLY_CLIENT_SECRET not set",
+        },
+        500
+      );
+    }
+
     // ------------------------------------------------------------------
     // OAuth callback — Linkly redirects here after the user approves
     // ------------------------------------------------------------------

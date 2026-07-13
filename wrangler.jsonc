@@ -30,6 +30,16 @@
 		"directory": "./public/"
 	},
 	/**
+	 * Plaintext vars (committed). LINKLY_CLIENT_ID is an OAuth client identifier,
+	 * not a credential (it travels in plaintext in authorize redirect URLs), so
+	 * it lives here to keep config self-documenting and survive redeploys.
+	 * LINKLY_CLIENT_SECRET and SIGNING_SECRET are credentials — set them as
+	 * encrypted secrets (`wrangler secret put`), NEVER here (this repo is public).
+	 */
+	"vars": {
+		"LINKLY_CLIENT_ID": "linkly_mcp_a93b54f6f1bb7194"
+	},
+	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
 	 */
