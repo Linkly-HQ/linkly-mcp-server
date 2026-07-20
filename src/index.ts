@@ -301,11 +301,13 @@ const TOOLS = [
         },
         domain: {
           type: "string",
-          description: "Custom domain for the short link (without trailing /)",
+          description:
+            "Custom domain for the short link (without trailing /). Must be a domain that already belongs to this workspace — call list_domains to get valid values. Required whenever slug is set.",
         },
         slug: {
           type: "string",
-          description: "Custom slug/suffix for the link (must start with /)",
+          description:
+            "Custom slug/suffix for the link (must start with /). Only valid together with domain: setting slug without a workspace-owned domain is rejected by the API.",
         },
         enabled: {
           type: "boolean",
