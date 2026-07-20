@@ -2037,6 +2037,15 @@ export default {
         client: params?.clientInfo?.name,
         client_version: params?.clientInfo?.version,
         token_prefix: tokenPrefix,
+        // Explicit, because a missing token_prefix is ambiguous: most traffic
+        // is pre-auth discovery (initialize/tools/list are served without a
+        // token; only tools/call requires one), so "no user" is the normal
+        // case rather than a failure to capture one.
+        has_auth: tokenPrefix !== undefined,
+        // Correlators that work before a user authenticates: identifies the
+        // calling software, and groups a session's requests together.
+        user_agent: request.headers.get("User-Agent") || undefined,
+        session: request.headers.get("Mcp-Session-Id") || undefined,
       });
       try {
         const oauthState = getOAuthState(params);
