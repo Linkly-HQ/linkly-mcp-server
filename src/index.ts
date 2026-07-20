@@ -1465,7 +1465,16 @@ interface MCPEnv {
   // an encrypted secret (`wrangler secret put BETTERSTACK_SOURCE_TOKEN`).
   BETTERSTACK_INGEST_URL?: string;
   BETTERSTACK_SOURCE_TOKEN?: string;
+  // Populated by the version_metadata binding in wrangler.jsonc.
+  CF_VERSION_METADATA?: { id: string; tag?: string; timestamp?: string };
 }
+
+/**
+ * Identifies this codebase in Better Stack. The source is shared with other
+ * emitters, so every event carries it to make "who logged this?" answerable
+ * by filtering rather than inference.
+ */
+const LOG_SERVICE = "linkly-mcp-server-worker";
 
 /**
  * Ship a structured log event to Better Stack via its HTTP ingestion
@@ -1483,7 +1492,13 @@ function logToBetterStack(
   const token = env.BETTERSTACK_SOURCE_TOKEN;
   if (!url || !token) return;
 
-  const body = JSON.stringify({ dt: new Date().toISOString(), ...event });
+  const body = JSON.stringify({
+    dt: new Date().toISOString(),
+    service: LOG_SERVICE,
+    version: env.CF_VERSION_METADATA?.id,
+    version_tag: env.CF_VERSION_METADATA?.tag,
+    ...event,
+  });
   ctx.waitUntil(
     fetch(url, {
       method: "POST",
