@@ -36,8 +36,15 @@
 	 * LINKLY_CLIENT_SECRET and SIGNING_SECRET are credentials — set them as
 	 * encrypted secrets (`wrangler secret put`), NEVER here (this repo is public).
 	 */
+	/**
+	 * BETTERSTACK_INGEST_URL is the Better Stack HTTP ingestion endpoint. It is
+	 * safe to commit: without BETTERSTACK_SOURCE_TOKEN (an encrypted secret, set
+	 * via `wrangler secret put BETTERSTACK_SOURCE_TOKEN`) it can't ingest logs.
+	 * If either is unset the worker simply skips log shipping.
+	 */
 	"vars": {
-		"LINKLY_CLIENT_ID": "linkly_mcp_a93b54f6f1bb7194"
+		"LINKLY_CLIENT_ID": "linkly_mcp_a93b54f6f1bb7194",
+		"BETTERSTACK_INGEST_URL": "https://s2513920.eu-fsn-3.betterstackdata.com"
 	},
 	/**
 	 * Smart Placement

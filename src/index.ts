@@ -1441,6 +1441,42 @@ interface MCPEnv {
   LINKLY_CLIENT_ID: string;
   LINKLY_CLIENT_SECRET: string;
   SIGNING_SECRET: string;
+  // Optional Better Stack (Telemetry) log shipping — see logToBetterStack.
+  // BETTERSTACK_INGEST_URL is a committed plaintext var; the source token is
+  // an encrypted secret (`wrangler secret put BETTERSTACK_SOURCE_TOKEN`).
+  BETTERSTACK_INGEST_URL?: string;
+  BETTERSTACK_SOURCE_TOKEN?: string;
+}
+
+/**
+ * Ship a structured log event to Better Stack via its HTTP ingestion
+ * endpoint. Fire-and-forget through ctx.waitUntil so it never blocks or
+ * fails the MCP response — a logging outage must not take the server down.
+ * No-ops when the source isn't configured, so the worker still runs in
+ * local dev and forks without Better Stack credentials.
+ */
+function logToBetterStack(
+  env: MCPEnv,
+  ctx: ExecutionContext,
+  event: Record<string, unknown>
+): void {
+  const url = env.BETTERSTACK_INGEST_URL;
+  const token = env.BETTERSTACK_SOURCE_TOKEN;
+  if (!url || !token) return;
+
+  const body = JSON.stringify({ dt: new Date().toISOString(), ...event });
+  ctx.waitUntil(
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body,
+    }).catch(() => {
+      // Swallow — a failed log must never surface on the request path.
+    })
+  );
 }
 
 function b64uEncode(data: Uint8Array | string): string {
@@ -1555,7 +1591,7 @@ interface AuthCodePayload {
 }
 
 export default {
-  async fetch(request: Request, env: MCPEnv): Promise<Response> {
+  async fetch(request: Request, env: MCPEnv, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // Fail loud if the upstream OAuth credentials are missing, instead of
@@ -1622,6 +1658,12 @@ export default {
       if (!upstreamResp.ok) {
         const text = await upstreamResp.text();
         console.log("Upstream token exchange failed:", upstreamResp.status, text);
+        logToBetterStack(env, ctx, {
+          level: "error",
+          message: "upstream_token_exchange_failed",
+          status: upstreamResp.status,
+          detail: text,
+        });
         return new Response(
           `Upstream token exchange failed (${upstreamResp.status}): ${text}`,
           { status: 502, headers: { "Content-Type": "text/plain" } }
@@ -1941,6 +1983,12 @@ export default {
       }
 
       const { id, method, params } = body;
+      logToBetterStack(env, ctx, {
+        level: "info",
+        message: "mcp_request",
+        method,
+        tool: method === "tools/call" ? params?.name : undefined,
+      });
       try {
         const oauthState = getOAuthState(params);
         // ---- initialize ----
@@ -2039,6 +2087,14 @@ export default {
         );
       } catch (e: any) {
         console.log(e);
+        logToBetterStack(env, ctx, {
+          level: "error",
+          message: "mcp_error",
+          method,
+          tool: method === "tools/call" ? params?.name : undefined,
+          error: String(e?.message ?? e),
+          stack: e?.stack,
+        });
         return new Response(
           JSON.stringify(jsonRpcError(id, -32603, "Internal error")),
           { status: 500 }
