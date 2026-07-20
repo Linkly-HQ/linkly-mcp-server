@@ -980,6 +980,12 @@ function isAuthenticated(oauthState: OAuthState | null): boolean {
   return true;
 }
 
+/** Error from the upstream Linkly API, carrying the parsed response body. */
+class LinklyApiError extends Error {
+  status?: number;
+  body?: unknown;
+}
+
 async function apiRequest(
   token: string,
   method: RequestInit["method"],
@@ -1002,7 +1008,18 @@ async function apiRequest(
 
   if (!resp.ok) {
     const text = await resp.text();
-    throw new Error(`Linkly API ${resp.status}: ${text}`);
+    // Carry the API's validation body as structured data rather than
+    // concatenating it into the message. Better Stack then indexes the
+    // field names (e.g. slug, domain), so failures can be grouped and
+    // alerted on per-field instead of by string-matching a message.
+    const err = new LinklyApiError(`Linkly API ${resp.status}:`);
+    err.status = resp.status;
+    try {
+      err.body = JSON.parse(text);
+    } catch {
+      err.body = text;
+    }
+    throw err;
   }
   return resp.json();
 }
@@ -2093,6 +2110,9 @@ export default {
           method,
           tool: method === "tools/call" ? params?.name : undefined,
           error: String(e?.message ?? e),
+          // Present only for upstream API failures (see LinklyApiError).
+          error_json: e instanceof LinklyApiError ? e.body : undefined,
+          status: e instanceof LinklyApiError ? e.status : undefined,
           stack: e?.stack,
         });
         return new Response(
