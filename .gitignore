@@ -1,0 +1,9 @@
+# Local secrets for `wrangler dev` — must never be committed
+.dev.vars
+.dev.vars.*
+
+# Dependencies — restored via `npm ci` from package-lock.json
+node_modules/
+
+# Wrangler build/dev state (includes cached Cloudflare account metadata)
+.wrangler/
