@@ -1,7 +1,7 @@
 {
 	"name": "linkly-mcp-server",
 	"version": "1.4.0",
-	"description": "[DEPRECATED] The self-hosted Linkly MCP server is deprecated. Use the hosted server at https://mcp.linklyhq.com instead. See https://linklyhq.com/support/mcp-server",
+	"description": "Official MCP server for Linkly — create and manage short links, custom domains, click analytics and webhooks from any MCP client. Powers the hosted server at https://mcp.linklyhq.com",
 	"author": "Linkly <support@linklyhq.com>",
 	"license": "MIT",
 	"homepage": "https://linklyhq.com",
