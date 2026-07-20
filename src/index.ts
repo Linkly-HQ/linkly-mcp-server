@@ -2094,9 +2094,24 @@ export default {
           );
         }
 
-        // ---- notifications/initialized ----
-        if (method === "notifications/initialized") {
-          return new Response("", { status: 204 });
+        // ---- ping ----
+        // Spec-required utility method: the server must answer with an empty
+        // result. This previously fell through to "Method not found", which
+        // reads as a dead server to uptime monitors and to the directory
+        // crawlers that probe it right after initialize.
+        if (method === "ping") {
+          return new Response(JSON.stringify(jsonRpcResponse(id, {})), {
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+
+        // ---- notifications/* ----
+        // Notifications carry no id and expect no response. Match the whole
+        // namespace rather than just notifications/initialized: clients also
+        // send roots/list_changed and cancelled, both of which used to 404.
+        // 202 with an empty body is what the Streamable HTTP spec requires.
+        if (typeof method === "string" && method.startsWith("notifications/")) {
+          return new Response(null, { status: 202 });
         }
 
         // ---- tools/list ----
