@@ -2017,11 +2017,26 @@ export default {
       }
 
       const { id, method, params } = body;
+      // First 8 chars only — enough to correlate a log line back to a user
+      // with a prefix match against the tokens table, far too little to be a
+      // usable credential if the log store is ever exposed.
+      const tokenPrefix =
+        (request.headers.get("Authorization") || "")
+          .replace(/^Bearer\s+/i, "")
+          .slice(0, 8) || undefined;
+
       logToBetterStack(env, ctx, {
         level: "info",
         message: "mcp_request",
         method,
         tool: method === "tools/call" ? params?.name : undefined,
+        // Full argument values, per explicit request. Note these can include
+        // destination URLs, which sometimes carry tokens in query strings.
+        args: method === "tools/call" ? params?.arguments : undefined,
+        // Which MCP client is calling (Claude, ChatGPT, Cursor, ...).
+        client: params?.clientInfo?.name,
+        client_version: params?.clientInfo?.version,
+        token_prefix: tokenPrefix,
       });
       try {
         const oauthState = getOAuthState(params);
@@ -2107,11 +2122,20 @@ export default {
             );
           }
 
-          return await handleToolCall(
+          const startedAt = Date.now();
+          const toolResponse = await handleToolCall(
             id,
             { name, args },
             request.headers.get("Authorization")!
           );
+          logToBetterStack(env, ctx, {
+            level: "info",
+            message: "tool_call_complete",
+            tool: name,
+            duration_ms: Date.now() - startedAt,
+            token_prefix: tokenPrefix,
+          });
+          return toolResponse;
         }
 
         // ---- method not found ----
@@ -2126,6 +2150,8 @@ export default {
           message: "mcp_error",
           method,
           tool: method === "tools/call" ? params?.name : undefined,
+          args: method === "tools/call" ? params?.arguments : undefined,
+          token_prefix: tokenPrefix,
           error: String(e?.message ?? e),
           // Present only for upstream API failures (see LinklyApiError).
           error_json: e instanceof LinklyApiError ? e.body : undefined,
