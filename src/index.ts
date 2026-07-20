@@ -1026,11 +1026,42 @@ async function apiRequest(
   return resp.json();
 }
 
+/**
+ * Per-request scratch space for facts worth logging that are only discovered
+ * partway through handling a tool call. Populated as a side effect and read by
+ * the caller when it writes the log event.
+ */
+type LogContext = { workspace_id?: number; workspace_name?: string };
+
+/**
+ * Resolve the workspace a tool acts on. Every tool but list_workspaces treats
+ * the first workspace as the active one, so this was duplicated 18 times.
+ *
+ * Recording the id on logCtx here is what makes log events attributable to a
+ * workspace: it is not present on the incoming request, and is only learned by
+ * making this call.
+ */
+async function resolveWorkspaces(
+  token: string,
+  logCtx?: LogContext
+): Promise<{ id: number; name: string }[]> {
+  const workspaces = (await apiRequest(token, "GET", `/api/v1/workspaces`)) as {
+    id: number;
+    name: string;
+  }[];
+  if (logCtx) {
+    logCtx.workspace_id = workspaces?.[0]?.id;
+    logCtx.workspace_name = workspaces?.[0]?.name;
+  }
+  return workspaces;
+}
+
 // Handle tool execution
 async function handleToolCall(
   id: string,
   { name, args }: ToolCall,
-  token: string
+  token: string,
+  logCtx?: LogContext
 ) {
   // const { workspaceId: WORKSPACE_ID } = env;
   switch (name) {
@@ -1056,11 +1087,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "update_workspace": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "PATCH",
@@ -1070,11 +1097,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "create_link": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "POST",
@@ -1085,11 +1108,7 @@ async function handleToolCall(
     }
     case "update_link": {
       const { link_id, ...updateData } = args;
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "POST",
@@ -1099,11 +1118,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "list_links": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const listParams = new URLSearchParams();
       if (args.page != null) listParams.append("page", `${args.page}`);
       if (args.page_size != null)
@@ -1123,11 +1138,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "batchDeleteLinks": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "DELETE",
@@ -1137,11 +1148,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "delete_link": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "DELETE",
@@ -1163,11 +1170,7 @@ async function handleToolCall(
     }
     case "get_clicks": {
       const params = new URLSearchParams();
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       params.append("format", "json");
       if (args.link_id) params.append("link_id", `${args.link_id}`);
       const url = `/api/v1/workspace/${
@@ -1180,11 +1183,7 @@ async function handleToolCall(
     }
     case "get_analytics": {
       const params = new URLSearchParams();
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       if (args.start) params.append("start", `${args.start}`);
       if (args.end) params.append("end", `${args.end}`);
       if (args.link_id) params.append("link_id", `${args.link_id}`);
@@ -1205,11 +1204,7 @@ async function handleToolCall(
     }
     case "get_analytics_by": {
       const params = new URLSearchParams();
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       params.append("counter", `${args.counter}`);
       if (args.start) params.append("start", `${args.start}`);
       if (args.end) params.append("end", `${args.end}`);
@@ -1228,11 +1223,7 @@ async function handleToolCall(
     }
     case "export_clicks": {
       const params = new URLSearchParams();
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       params.append("format", "json");
       if (args.start) params.append("start", `${args.start}`);
       if (args.end) params.append("end", `${args.end}`);
@@ -1250,11 +1241,7 @@ async function handleToolCall(
 
     // Domain Management
     case "list_domains": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "GET",
@@ -1263,11 +1250,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "create_domain": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "POST",
@@ -1277,11 +1260,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "delete_domain": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "DELETE",
@@ -1290,11 +1269,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "update_domain_favicon": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "PATCH",
@@ -1306,11 +1281,7 @@ async function handleToolCall(
 
     // Link Search
     case "search_links": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const params = new URLSearchParams();
       params.append("search", `${args.query}`);
       const result = await apiRequest(
@@ -1325,11 +1296,7 @@ async function handleToolCall(
 
     // Workspace Webhooks
     case "list_webhooks": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "GET",
@@ -1338,11 +1305,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "subscribe_webhook": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const result = await apiRequest(
         token,
         "POST",
@@ -1352,11 +1315,7 @@ async function handleToolCall(
       return toolResult(id, result);
     }
     case "unsubscribe_webhook": {
-      const workspaceID = (await apiRequest(
-        token,
-        "GET",
-        `/api/v1/workspaces`
-      )) as { id: number; name: string }[];
+      const workspaceID = await resolveWorkspaces(token, logCtx);
       const encodedUrl = encodeURIComponent(`${args.url}`);
       await apiRequest(
         token,
@@ -2025,6 +1984,11 @@ export default {
           .replace(/^Bearer\s+/i, "")
           .slice(0, 8) || undefined;
 
+      // Filled in during tool dispatch, then read by the completion and error
+      // logs below. Declared out here so the catch block can still see whatever
+      // was resolved before the failure.
+      const logCtx: LogContext = {};
+
       logToBetterStack(env, ctx, {
         level: "info",
         message: "mcp_request",
@@ -2150,7 +2114,8 @@ export default {
           const toolResponse = await handleToolCall(
             id,
             { name, args },
-            request.headers.get("Authorization")!
+            request.headers.get("Authorization")!,
+            logCtx
           );
           logToBetterStack(env, ctx, {
             level: "info",
@@ -2158,6 +2123,8 @@ export default {
             tool: name,
             duration_ms: Date.now() - startedAt,
             token_prefix: tokenPrefix,
+            workspace_id: logCtx.workspace_id,
+            workspace_name: logCtx.workspace_name,
           });
           return toolResponse;
         }
@@ -2176,6 +2143,9 @@ export default {
           tool: method === "tools/call" ? params?.name : undefined,
           args: method === "tools/call" ? params?.arguments : undefined,
           token_prefix: tokenPrefix,
+          // May be unset if the failure happened before the workspace lookup.
+          workspace_id: logCtx.workspace_id,
+          workspace_name: logCtx.workspace_name,
           error: String(e?.message ?? e),
           // Present only for upstream API failures (see LinklyApiError).
           error_json: e instanceof LinklyApiError ? e.body : undefined,
