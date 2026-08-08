@@ -191,7 +191,8 @@ const TOOLS = [
   },
   {
     name: "update_workspace",
-    description: "Update workspace settings",
+    description:
+      "Update workspace settings. Only the fields provided are changed; omitted fields keep their current values.",
     inputSchema: {
       type: "object",
       properties: {
@@ -200,11 +201,13 @@ const TOOLS = [
           description: "Workspace name",
         },
         webhooks: {
-          type: "string",
-          description: "Webhook URL for notifications",
+          type: "array",
+          items: { type: "string" },
+          description:
+            "REPLACES the workspace's full webhook subscription list. Omit to leave webhooks unchanged; prefer subscribe_webhook / unsubscribe_webhook for adding or removing a single URL.",
         },
       },
-      required: ["name", "webhooks"],
+      required: [],
     },
     annotations: {
       title: "Update workspace settings",
@@ -1007,8 +1010,9 @@ async function apiRequest(
   if (body) options.body = JSON.stringify(body);
   const resp = await fetch(url, options);
 
+  const text = await resp.text();
+
   if (!resp.ok) {
-    const text = await resp.text();
     // Carry the API's validation body as structured data rather than
     // concatenating it into the message. Better Stack then indexes the
     // field names (e.g. slug, domain), so failures can be grouped and
@@ -1022,7 +1026,15 @@ async function apiRequest(
     }
     throw err;
   }
-  return resp.json();
+
+  // Some endpoints (e.g. webhook DELETEs) reply 200 with an empty body;
+  // resp.json() would throw on those and turn a successful call into -32603.
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 }
 
 /**
@@ -2151,6 +2163,34 @@ export default {
           status: e instanceof LinklyApiError ? e.status : undefined,
           stack: e?.stack,
         });
+        // Upstream API rejections (4xx validation, auth, limits) are tool
+        // execution failures, not protocol errors: return them as a normal
+        // tools/call result with isError:true so the model sees the actual
+        // message ("Domain exists but isn't pointing to Linkly") instead of
+        // an opaque -32603. Protocol errors stay reserved for real bugs.
+        if (
+          e instanceof LinklyApiError &&
+          typeof e.status === "number" &&
+          e.status < 500 &&
+          method === "tools/call"
+        ) {
+          const detail =
+            typeof e.body === "string" ? e.body : JSON.stringify(e.body);
+          return new Response(
+            JSON.stringify(
+              jsonRpcResponse(id, {
+                content: [
+                  {
+                    type: "text",
+                    text: `Linkly API error (HTTP ${e.status}): ${detail}`,
+                  },
+                ],
+                isError: true,
+              })
+            ),
+            { headers: { "Content-Type": "application/json" } }
+          );
+        }
         return new Response(
           JSON.stringify(jsonRpcError(id, -32603, "Internal error")),
           { status: 500 }
