@@ -583,7 +583,7 @@ const TOOLS = [
   {
     name: "get_analytics_by",
     description:
-      "Get click counts grouped by a dimension (country, platform, browser, etc.). Useful for breakdowns and top-N reports.",
+      "Get click counts grouped by a dimension (country, platform, referrer, etc.). Useful for breakdowns and top-N reports.",
     inputSchema: {
       type: "object",
       properties: {
@@ -592,7 +592,6 @@ const TOOLS = [
           enum: [
             "country",
             "platform",
-            "browser_name",
             "referer",
             "isp",
             "link_id",
