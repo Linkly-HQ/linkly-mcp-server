@@ -1,0 +1,2709 @@
+{
+  "author": "Linkly",
+  "cloudEndpoint": "https://mcp.linklyhq.com",
+  "description": "Official Linkly URL shortener server: create branded short links, read click analytics by country/platform/referrer, manage custom domains and click webhooks. Hosted at mcp.linklyhq.com with OAuth sign-in — no API keys, no local install. Works on every Linkly plan, including free.",
+  "homepage": "https://linklyhq.com",
+  "icon": "https://mcp.linklyhq.com/icons/icon-256x256.png",
+  "identifier": "linkly-hq-linkly-mcp-server",
+  "name": "Linkly",
+  "prompts": [],
+  "resources": [],
+  "tags": [
+    "url-shortener",
+    "short-links",
+    "link-management",
+    "click-analytics",
+    "marketing",
+    "utm",
+    "qr-codes",
+    "webhooks",
+    "oauth",
+    "remote",
+    "linkly"
+  ],
+  "tools": [
+    {
+      "name": "test_authentication",
+      "description": "Test API Authentication",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Test authentication",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_workspaces",
+      "description": "Return details of authenticated workspace",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "Workspace ID"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Workspace name"
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Get workspace details",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "batchDeleteLinks",
+      "description": "Batch delete multiple links",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Array of link IDs to delete"
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Batch delete links",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "update_workspace",
+      "description": "Update workspace settings. Only the fields provided are changed; omitted fields keep their current values.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Workspace name"
+          },
+          "webhooks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "REPLACES the workspace's full webhook subscription list. Omit to leave webhooks unchanged; prefer subscribe_webhook / unsubscribe_webhook for adding or removing a single URL."
+          }
+        },
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Update workspace settings",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_links",
+      "description": "List links with sorting and search",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "search": {
+            "type": "string",
+            "description": "Search Query"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Field to sort by"
+          },
+          "sort_dir": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Sort direction"
+          }
+        },
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "A Linkly link (mirrors the OpenAPI Link schema)",
+              "properties": {
+                "id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Link ID"
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uri",
+                  "description": "Destination URL"
+                },
+                "full_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uri",
+                  "description": "Full short-link URL"
+                },
+                "domain": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "workspace_id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "created_by_user_id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "enabled": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "deleted": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "cloaking": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "forward_params": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "hide_referrer": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "block_bots": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "public_analytics": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "head_tags": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "body_tags": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "linkify_words": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "replacements": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "rules": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "what": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      },
+                      "rule_url": {
+                        "type": "string"
+                      },
+                      "matches": {
+                        "type": "string"
+                      },
+                      "percentage": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "utm_source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_medium": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_campaign": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_term": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_content": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "og_title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "og_description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "og_image": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fb_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tiktok_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "linkedin_partner_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "twitter_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "pinterest_tag_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "microsoft_uet_tag_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "snapchat_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reddit_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "gtm_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "ga4_tag_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "expiry_datetime": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "expiry_destination": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uri"
+                },
+                "expiry_clicks": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "skip_social_crawler_tracking": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "password": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "qr_styles": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                },
+                "webhooks": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "notify_user_ids": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "notify_slack": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "List links",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "ping",
+      "description": "Health check",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "a message to ping , default to Hello From Linkkly"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "annotations": {
+        "title": "Ping server",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "create_link",
+      "description": "Create short links and URL shorteners. Use this when the user asks to shorten a URL, create a short link, or make a link shorter.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The destination URL for the link (required)"
+          },
+          "name": {
+            "type": "string",
+            "description": "A nickname for the link to identify it later"
+          },
+          "note": {
+            "type": "string",
+            "description": "A private note about this link"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Custom domain for the short link (without trailing /). Must be a domain that already belongs to this workspace — call list_domains to get valid values. Required whenever slug is set."
+          },
+          "slug": {
+            "type": "string",
+            "description": "Custom slug/suffix for the link (must start with /). Only valid together with domain: setting slug without a workspace-owned domain is rejected by the API."
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the link is active (default: true)"
+          },
+          "utm_source": {
+            "type": "string",
+            "description": "UTM source parameter"
+          },
+          "utm_medium": {
+            "type": "string",
+            "description": "UTM medium parameter"
+          },
+          "utm_campaign": {
+            "type": "string",
+            "description": "UTM campaign parameter"
+          },
+          "utm_term": {
+            "type": "string",
+            "description": "UTM term parameter"
+          },
+          "utm_content": {
+            "type": "string",
+            "description": "UTM content parameter"
+          },
+          "og_title": {
+            "type": "string",
+            "description": "Open Graph title for social media previews"
+          },
+          "og_description": {
+            "type": "string",
+            "description": "Open Graph description for social media previews"
+          },
+          "og_image": {
+            "type": "string",
+            "description": "Open Graph image URL for social media previews"
+          },
+          "fb_pixel_id": {
+            "type": "string",
+            "description": "Meta/Facebook Pixel ID for tracking"
+          },
+          "ga4_tag_id": {
+            "type": "string",
+            "description": "Google Analytics 4 tag ID"
+          },
+          "gtm_id": {
+            "type": "string",
+            "description": "Google Tag Manager container ID"
+          },
+          "cloaking": {
+            "type": "boolean",
+            "description": "Hide destination URL by opening in an iframe"
+          },
+          "forward_params": {
+            "type": "boolean",
+            "description": "Forward URL parameters to the destination"
+          },
+          "block_bots": {
+            "type": "boolean",
+            "description": "Block known bots and spiders from following the link"
+          },
+          "hide_referrer": {
+            "type": "boolean",
+            "description": "Hide referrer information when users click"
+          },
+          "expiry_datetime": {
+            "type": "string",
+            "description": "ISO 8601 datetime when the link should expire"
+          },
+          "expiry_destination": {
+            "type": "string",
+            "description": "Fallback URL after expiry (404 if blank)"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Link ID"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Destination URL"
+          },
+          "full_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Full short-link URL"
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workspace_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_by_user_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "enabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "deleted": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "cloaking": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "forward_params": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "hide_referrer": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "block_bots": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "public_analytics": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "head_tags": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body_tags": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkify_words": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "replacements": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rules": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "what": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "rule_url": {
+                  "type": "string"
+                },
+                "matches": {
+                  "type": "string"
+                },
+                "percentage": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "utm_source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_medium": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_campaign": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_term": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fb_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tiktok_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkedin_partner_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "twitter_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pinterest_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "microsoft_uet_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "snapchat_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reddit_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gtm_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ga4_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expiry_datetime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expiry_destination": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "expiry_clicks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "skip_social_crawler_tracking": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "password": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "qr_styles": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "webhooks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "notify_user_ids": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer"
+            }
+          },
+          "notify_slack": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "description": "A Linkly link (mirrors the OpenAPI Link schema)"
+      },
+      "annotations": {
+        "title": "Create short link",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "update_link",
+      "description": "Update an existing Linkly link by its ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "The ID of the link to update (required)"
+          },
+          "url": {
+            "type": "string",
+            "description": "New destination URL"
+          },
+          "name": {
+            "type": "string",
+            "description": "New nickname for the link"
+          },
+          "note": {
+            "type": "string",
+            "description": "New private note"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether the link is active"
+          },
+          "utm_source": {
+            "type": "string",
+            "description": "UTM source parameter"
+          },
+          "utm_medium": {
+            "type": "string",
+            "description": "UTM medium parameter"
+          },
+          "utm_campaign": {
+            "type": "string",
+            "description": "UTM campaign parameter"
+          },
+          "utm_term": {
+            "type": "string",
+            "description": "UTM term parameter"
+          },
+          "utm_content": {
+            "type": "string",
+            "description": "UTM content parameter"
+          },
+          "og_title": {
+            "type": "string",
+            "description": "Open Graph title"
+          },
+          "og_description": {
+            "type": "string",
+            "description": "Open Graph description"
+          },
+          "og_image": {
+            "type": "string",
+            "description": "Open Graph image URL"
+          },
+          "fb_pixel_id": {
+            "type": "string",
+            "description": "Meta Pixel ID"
+          },
+          "ga4_tag_id": {
+            "type": "string",
+            "description": "Google Analytics 4 tag ID"
+          },
+          "gtm_id": {
+            "type": "string",
+            "description": "Google Tag Manager ID"
+          },
+          "cloaking": {
+            "type": "boolean",
+            "description": "Enable URL cloaking"
+          },
+          "forward_params": {
+            "type": "boolean",
+            "description": "Forward URL parameters"
+          },
+          "block_bots": {
+            "type": "boolean",
+            "description": "Block bots"
+          },
+          "hide_referrer": {
+            "type": "boolean",
+            "description": "Hide referrer"
+          },
+          "expiry_datetime": {
+            "type": "string",
+            "description": "Expiry datetime (ISO 8601)"
+          },
+          "expiry_destination": {
+            "type": "string",
+            "description": "Fallback URL after expiry"
+          }
+        },
+        "required": [
+          "link_id"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Link ID"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Destination URL"
+          },
+          "full_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Full short-link URL"
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workspace_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_by_user_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "enabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "deleted": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "cloaking": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "forward_params": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "hide_referrer": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "block_bots": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "public_analytics": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "head_tags": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body_tags": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkify_words": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "replacements": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rules": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "what": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "rule_url": {
+                  "type": "string"
+                },
+                "matches": {
+                  "type": "string"
+                },
+                "percentage": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "utm_source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_medium": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_campaign": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_term": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fb_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tiktok_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkedin_partner_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "twitter_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pinterest_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "microsoft_uet_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "snapchat_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reddit_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gtm_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ga4_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expiry_datetime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expiry_destination": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "expiry_clicks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "skip_social_crawler_tracking": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "password": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "qr_styles": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "webhooks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "notify_user_ids": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer"
+            }
+          },
+          "notify_slack": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "description": "A Linkly link (mirrors the OpenAPI Link schema)"
+      },
+      "annotations": {
+        "title": "Update link",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "delete_link",
+      "description": "Delete a Linkly link by its ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "The ID of the link to delete"
+          }
+        },
+        "required": [
+          "link_id"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Delete link",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_link",
+      "description": "Get details of a specific Linkly link by its ID",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "The ID of the link to retrieve"
+          }
+        },
+        "required": [
+          "link_id"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Link ID"
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Destination URL"
+          },
+          "full_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "Full short-link URL"
+          },
+          "domain": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "slug": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workspace_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_by_user_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "enabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "deleted": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "cloaking": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "forward_params": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "hide_referrer": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "block_bots": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "public_analytics": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "head_tags": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "body_tags": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkify_words": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "replacements": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rules": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "properties": {
+                "what": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "rule_url": {
+                  "type": "string"
+                },
+                "matches": {
+                  "type": "string"
+                },
+                "percentage": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "utm_source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_medium": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_campaign": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_term": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "utm_content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "og_image": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fb_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tiktok_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "linkedin_partner_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "twitter_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pinterest_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "microsoft_uet_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "snapchat_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reddit_pixel_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "gtm_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ga4_tag_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expiry_datetime": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expiry_destination": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "expiry_clicks": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "skip_social_crawler_tracking": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "password": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "qr_styles": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "webhooks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "notify_user_ids": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer"
+            }
+          },
+          "notify_slack": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "description": "A Linkly link (mirrors the OpenAPI Link schema)"
+      },
+      "annotations": {
+        "title": "Get link details",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_clicks",
+      "description": "Get recent click data for the workspace",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "Optional: filter clicks by link ID"
+          }
+        },
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": true,
+        "description": "Time-series click data"
+      },
+      "annotations": {
+        "title": "Get recent clicks",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_analytics",
+      "description": "Get time-series click analytics data for charting. Returns click counts over time.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "description": "Start date in YYYY-MM-DD format (default: 30 days ago)"
+          },
+          "end": {
+            "type": "string",
+            "description": "End date in YYYY-MM-DD format (default: today)"
+          },
+          "link_id": {
+            "type": "integer",
+            "description": "Filter by specific link ID"
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "day",
+              "hour"
+            ],
+            "description": "Time granularity: 'day' (default) or 'hour'"
+          },
+          "country": {
+            "type": "string",
+            "description": "Filter by country code (e.g., 'US', 'GB')"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Filter by platform (e.g., 'desktop', 'mobile', 'tablet')"
+          },
+          "browser": {
+            "type": "string",
+            "description": "Filter by browser name"
+          },
+          "unique": {
+            "type": "boolean",
+            "description": "Count unique clicks only (by IP)"
+          },
+          "bots": {
+            "type": "string",
+            "enum": [
+              "include",
+              "exclude",
+              "only"
+            ],
+            "description": "Bot filtering: include (default), exclude, or only"
+          }
+        },
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Get click analytics",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "get_analytics_by",
+      "description": "Get click counts grouped by a dimension (country, platform, referrer, etc.). Useful for breakdowns and top-N reports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "counter": {
+            "type": "string",
+            "enum": [
+              "country",
+              "platform",
+              "referer",
+              "isp",
+              "link_id",
+              "destination",
+              "bot_name"
+            ],
+            "description": "Dimension to group by (required)"
+          },
+          "start": {
+            "type": "string",
+            "description": "Start date in YYYY-MM-DD format (default: 30 days ago)"
+          },
+          "end": {
+            "type": "string",
+            "description": "End date in YYYY-MM-DD format (default: today)"
+          },
+          "link_id": {
+            "type": "integer",
+            "description": "Filter by specific link ID"
+          },
+          "country": {
+            "type": "string",
+            "description": "Filter by country code"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Filter by platform"
+          },
+          "unique": {
+            "type": "boolean",
+            "description": "Count unique clicks only"
+          },
+          "bots": {
+            "type": "string",
+            "enum": [
+              "include",
+              "exclude",
+              "only"
+            ],
+            "description": "Bot filtering"
+          }
+        },
+        "required": [
+          "counter"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Get analytics by dimension",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "export_clicks",
+      "description": "Export detailed click records with full information (timestamp, browser, country, URL, platform, referer, bot, ISP, params).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "description": "Start date in YYYY-MM-DD format (default: 30 days ago)"
+          },
+          "end": {
+            "type": "string",
+            "description": "End date in YYYY-MM-DD format (default: yesterday)"
+          },
+          "link_id": {
+            "type": "integer",
+            "description": "Filter by specific link ID"
+          },
+          "country": {
+            "type": "string",
+            "description": "Filter by country code"
+          },
+          "platform": {
+            "type": "string",
+            "description": "Filter by platform"
+          },
+          "bots": {
+            "type": "string",
+            "enum": [
+              "include",
+              "exclude",
+              "only"
+            ],
+            "description": "Bot filtering"
+          }
+        },
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array"
+          }
+        },
+        "additionalProperties": true,
+        "description": "Time-series click data"
+      },
+      "annotations": {
+        "title": "Export click records",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_domains",
+      "description": "List all custom domains in the workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "A custom domain (mirrors the OpenAPI Domain schema)",
+              "properties": {
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "workspace_id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "List custom domains",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "create_domain",
+      "description": "Add a custom domain to the workspace. The domain must be configured to point to Linkly's servers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The domain name (e.g., 'links.example.com')"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "workspace_id": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true,
+        "description": "A custom domain (mirrors the OpenAPI Domain schema)"
+      },
+      "annotations": {
+        "title": "Add custom domain",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "delete_domain",
+      "description": "Remove a custom domain from the workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain_id": {
+            "type": "integer",
+            "description": "The ID of the domain to delete"
+          }
+        },
+        "required": [
+          "domain_id"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Delete custom domain",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "update_domain_favicon",
+      "description": "Update the favicon URL for a custom domain.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "domain_id": {
+            "type": "integer",
+            "description": "The ID of the domain to update"
+          },
+          "favicon_url": {
+            "type": "string",
+            "description": "URL to the favicon image"
+          }
+        },
+        "required": [
+          "domain_id",
+          "favicon_url"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Update domain favicon",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "search_links",
+      "description": "Search for links by name, URL, or note. Returns matching links with click statistics.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Search query to match against link names, URLs, and notes"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "A Linkly link (mirrors the OpenAPI Link schema)",
+              "properties": {
+                "id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "Link ID"
+                },
+                "url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uri",
+                  "description": "Destination URL"
+                },
+                "full_url": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uri",
+                  "description": "Full short-link URL"
+                },
+                "domain": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "slug": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "workspace_id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "created_by_user_id": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "enabled": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "deleted": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "cloaking": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "forward_params": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "hide_referrer": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "block_bots": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "public_analytics": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "head_tags": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "body_tags": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "linkify_words": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "replacements": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "rules": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                      "what": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      },
+                      "rule_url": {
+                        "type": "string"
+                      },
+                      "matches": {
+                        "type": "string"
+                      },
+                      "percentage": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "utm_source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_medium": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_campaign": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_term": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "utm_content": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "og_title": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "og_description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "og_image": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fb_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tiktok_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "linkedin_partner_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "twitter_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "pinterest_tag_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "microsoft_uet_tag_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "snapchat_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reddit_pixel_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "gtm_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "ga4_tag_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "expiry_datetime": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "expiry_destination": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uri"
+                },
+                "expiry_clicks": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "skip_social_crawler_tracking": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "password": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "qr_styles": {
+                  "type": [
+                    "object",
+                    "null"
+                  ],
+                  "additionalProperties": true
+                },
+                "webhooks": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "notify_user_ids": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "notify_slack": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Search links",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_webhooks",
+      "description": "List all webhook URLs subscribed to the workspace. These receive click events for all links.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "List webhooks",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "subscribe_webhook",
+      "description": "Subscribe a webhook URL to receive click events for all links in the workspace.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The webhook URL to receive click event notifications"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Add workspace webhook",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "unsubscribe_webhook",
+      "description": "Unsubscribe a webhook URL from workspace click events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The webhook URL to unsubscribe"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "annotations": {
+        "title": "Remove workspace webhook",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "list_link_webhooks",
+      "description": "List all webhook URLs subscribed to a specific link.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "The ID of the link"
+          }
+        },
+        "required": [
+          "link_id"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "List link webhooks",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "subscribe_link_webhook",
+      "description": "Subscribe a webhook URL to receive click events for a specific link.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "The ID of the link"
+          },
+          "url": {
+            "type": "string",
+            "description": "The webhook URL to receive click event notifications"
+          }
+        },
+        "required": [
+          "link_id",
+          "url"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "annotations": {
+        "title": "Add link webhook",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "unsubscribe_link_webhook",
+      "description": "Unsubscribe a webhook URL from a specific link's click events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "link_id": {
+            "type": "integer",
+            "description": "The ID of the link"
+          },
+          "url": {
+            "type": "string",
+            "description": "The webhook URL to unsubscribe"
+          }
+        },
+        "required": [
+          "link_id",
+          "url"
+        ]
+      },
+      "annotations": {
+        "title": "Remove link webhook",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false
+      }
+    }
+  ],
+  "version": "2.0.0",
+  "authorUrl": "https://linklyhq.com",
+  "repository": "https://github.com/Linkly-HQ/linkly-mcp-server",
+  "license": "MIT"
+}
