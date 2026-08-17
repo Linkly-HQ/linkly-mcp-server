@@ -1,5 +1,10 @@
 # Linkly MCP Server
 
+[![Claude connector directory](https://img.shields.io/badge/Claude-connector%20directory-d97757?logo=anthropic&logoColor=white)](https://claude.ai/directory/linkly)
+[![smithery badge](https://smithery.ai/badge/linkly/linkly)](https://smithery.ai/servers/linkly/linkly)
+[![Glama](https://glama.ai/mcp/servers/Linkly-HQ/linkly-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/Linkly-HQ/linkly-mcp-server)
+[![MCP registry](https://img.shields.io/badge/MCP%20registry-com.linklyhq%2Flinkly-blue)](https://registry.modelcontextprotocol.io/v0/servers?search=linkly)
+
 Official Model Context Protocol (MCP) server for [Linkly](https://linklyhq.com) — the URL shortener and link management platform.
 
 **This repository powers the hosted MCP server at `https://mcp.linklyhq.com`.** That is the only supported way to connect an AI assistant to Linkly via MCP. See https://linklyhq.com/support/mcp-server for setup instructions.
