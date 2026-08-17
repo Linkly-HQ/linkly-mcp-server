@@ -2101,6 +2101,25 @@ export default {
           );
         }
 
+        // ---- resources/list, prompts/list ----
+        // We expose neither, but directory scanners (Smithery, Glama, …) and
+        // some clients probe these right after initialize regardless of the
+        // advertised capabilities. Answering with empty lists is spec-correct;
+        // falling through to -32601 made the scan log a "Failed to list
+        // resources" error against an otherwise healthy server.
+        if (method === "resources/list") {
+          return new Response(
+            JSON.stringify(jsonRpcResponse(id, { resources: [] })),
+            { headers: { "Content-Type": "application/json" } }
+          );
+        }
+        if (method === "prompts/list") {
+          return new Response(
+            JSON.stringify(jsonRpcResponse(id, { prompts: [] })),
+            { headers: { "Content-Type": "application/json" } }
+          );
+        }
+
         // ---- tools/call ----
         if (method === "tools/call") {
           const name = params?.name;
