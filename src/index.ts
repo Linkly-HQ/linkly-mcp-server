@@ -1483,6 +1483,37 @@ function logToBetterStack(
   );
 }
 
+/**
+ * Break a client-supplied redirect_uri into the fields we need to decide how
+ * to enforce redirect binding later, without assuming it parses. Deliberately
+ * records the full URI: it is client-supplied, non-secret, and the exact
+ * string is what any future exact-match rule would be compared against.
+ *
+ * `loopback` follows RFC 8252 §7.3 — loopback redirects may vary their port
+ * between registration and use, so a naive exact match would break native
+ * clients. We log `port` separately to size that population.
+ */
+function describeRedirectUri(raw: string | null): Record<string, unknown> {
+  if (!raw) return { redirect_uri: null, redirect_parsed: false };
+  try {
+    const u = new URL(raw);
+    const host = u.hostname;
+    return {
+      redirect_uri: raw,
+      redirect_parsed: true,
+      redirect_scheme: u.protocol.replace(/:$/, ""),
+      redirect_host: host,
+      redirect_port: u.port || null,
+      redirect_loopback:
+        host === "localhost" || host === "127.0.0.1" || host === "[::1]",
+    };
+  } catch {
+    // Custom-scheme redirects (vscode://, cursor://) mostly do parse, but
+    // anything that does not still needs to show up in the data.
+    return { redirect_uri: raw, redirect_parsed: false };
+  }
+}
+
 function b64uEncode(data: Uint8Array | string): string {
   const bytes =
     typeof data === "string" ? new TextEncoder().encode(data) : data;
@@ -1762,6 +1793,28 @@ export default {
         // tolerate empty body
       }
       const clientId = `mcp-${crypto.randomUUID()}`;
+      const registeredRedirects: string[] = Array.isArray(body.redirect_uris)
+        ? body.redirect_uris
+        : [];
+
+      // Instrumentation only — nothing here rejects. Sizes the populations
+      // that a future redirect_uri/client binding would have to accommodate:
+      // clients registering zero redirect_uris (today silently defaulted to
+      // []), and loopback clients whose port may drift before /authorize.
+      logToBetterStack(env, ctx, {
+        level: "info",
+        message: "oauth_register",
+        client_id: clientId,
+        client_name: body.client_name ?? null,
+        redirect_uris: registeredRedirects,
+        redirect_uri_count: registeredRedirects.length,
+        redirect_uris_empty: registeredRedirects.length === 0,
+        redirects: registeredRedirects.map((r) => describeRedirectUri(r)),
+        token_endpoint_auth_method: body.token_endpoint_auth_method ?? null,
+        grant_types: body.grant_types ?? null,
+        ua: request.headers.get("User-Agent") ?? null,
+      });
+
       return jsonResponse(
         {
           client_id: clientId,
@@ -1787,6 +1840,30 @@ export default {
       const codeChallengeMethod =
         url.searchParams.get("code_challenge_method") ?? undefined;
       const mcpState = url.searchParams.get("state") ?? undefined;
+      const clientId = url.searchParams.get("client_id");
+
+      // Instrumentation only — logged before the validations below so that
+      // requests this endpoint already rejects are counted too. `client_id`
+      // is currently ignored by this handler entirely (/register does not
+      // persist anything), so this is the first visibility into whether real
+      // clients even send one, and whether they send a redirect_uri matching
+      // what they registered. `state` is deliberately not logged.
+      logToBetterStack(env, ctx, {
+        level: "info",
+        message: "oauth_authorize",
+        client_id: clientId,
+        client_id_present: clientId !== null,
+        // Every id minted so far has this shape and carries no bound redirect
+        // list, so this marks the population a grace window would need to
+        // keep accepting.
+        client_id_legacy_shape: clientId ? clientId.startsWith("mcp-") : false,
+        response_type: responseType,
+        pkce_present: codeChallenge !== undefined,
+        code_challenge_method: codeChallengeMethod ?? null,
+        scope: url.searchParams.get("scope") ?? null,
+        ua: request.headers.get("User-Agent") ?? null,
+        ...describeRedirectUri(redirectUri),
+      });
 
       if (!redirectUri) {
         return new Response("Missing redirect_uri", { status: 400 });
