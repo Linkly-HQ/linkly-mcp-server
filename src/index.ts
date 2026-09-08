@@ -1484,6 +1484,44 @@ function logToBetterStack(
 }
 
 /**
+ * What a signed client_id carries. The worker has no storage, so the
+ * registration IS the identifier: `/register` signs this with SIGNING_SECRET
+ * and hands it back as the client_id, and `/authorize` verifies it. Same
+ * trick already used for `state` and authorization codes.
+ */
+interface ClientReg {
+  ru: string[]; // registered redirect_uris
+  iat: number;
+}
+
+const CLIENT_ID_PREFIX = "mcpc_";
+
+/**
+ * RFC 8252 §7.3: a native client's loopback redirect may use a different port
+ * at authorize time than it registered, and servers MUST allow that. Compare
+ * loopback URIs with the port removed; everything else must match exactly.
+ */
+function normalizeRedirect(raw: string): string {
+  try {
+    const u = new URL(raw);
+    const h = u.hostname;
+    if (h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h === "::1") {
+      u.port = "";
+      return u.toString();
+    }
+    return raw;
+  } catch {
+    return raw;
+  }
+}
+
+function redirectMatches(registered: string[], presented: string): boolean {
+  if (registered.includes(presented)) return true;
+  const p = normalizeRedirect(presented);
+  return registered.some((r) => normalizeRedirect(r) === p);
+}
+
+/**
  * Break a client-supplied redirect_uri into the fields we need to decide how
  * to enforce redirect binding later, without assuming it parses. Deliberately
  * records the full URI: it is client-supplied, non-secret, and the exact
@@ -1792,10 +1830,20 @@ export default {
       } catch {
         // tolerate empty body
       }
-      const clientId = `mcp-${crypto.randomUUID()}`;
       const registeredRedirects: string[] = Array.isArray(body.redirect_uris)
-        ? body.redirect_uris
+        ? body.redirect_uris.filter((u: unknown) => typeof u === "string")
         : [];
+
+      // The client_id carries its own registration, signed. A client that
+      // registers no redirect_uris has nothing to bind, so it keeps the old
+      // unbound shape and takes the grace path at /authorize.
+      const clientId = registeredRedirects.length
+        ? CLIENT_ID_PREFIX +
+          (await signPayload<ClientReg>(env.SIGNING_SECRET, {
+            ru: registeredRedirects,
+            iat: Date.now(),
+          }))
+        : `mcp-${crypto.randomUUID()}`;
 
       // Instrumentation only — nothing here rejects. Sizes the populations
       // that a future redirect_uri/client binding would have to accommodate:
@@ -1873,6 +1921,54 @@ export default {
           status: 400,
         });
       }
+      // Redirect binding. A signed client_id carries the redirect_uris its
+      // owner registered, so we can require the presented one to be among
+      // them without any storage. An unsigned (legacy) or absent client_id
+      // cannot be checked — those take the grace path: allowed, but logged,
+      // so the population can be sized before this is tightened.
+      //
+      // Registration stays open to anyone. This only requires a client to use
+      // the redirect_uri it registered itself; it is not an allowlist and
+      // nothing is approved by us.
+      if (clientId && clientId.startsWith(CLIENT_ID_PREFIX)) {
+        const reg = await verifyPayload<ClientReg>(
+          env.SIGNING_SECRET,
+          clientId.slice(CLIENT_ID_PREFIX.length)
+        );
+        if (!reg) {
+          logToBetterStack(env, ctx, {
+            level: "warn",
+            message: "oauth_binding_reject",
+            reason: "unverifiable_client_id",
+            client_id: clientId,
+            redirect_uri: redirectUri,
+          });
+          return new Response("Invalid client_id", { status: 400 });
+        }
+        if (!redirectUri || !redirectMatches(reg.ru, redirectUri)) {
+          logToBetterStack(env, ctx, {
+            level: "warn",
+            message: "oauth_binding_reject",
+            reason: "redirect_uri_not_registered",
+            client_id: clientId,
+            redirect_uri: redirectUri,
+            registered_redirect_uris: reg.ru,
+          });
+          return new Response(
+            "redirect_uri does not match this client's registration",
+            { status: 400 }
+          );
+        }
+      } else {
+        logToBetterStack(env, ctx, {
+          level: "info",
+          message: "oauth_binding_grace",
+          reason: clientId ? "legacy_client_id" : "no_client_id",
+          client_id: clientId,
+          redirect_uri: redirectUri,
+        });
+      }
+
       // PKCE is mandatory. It was previously enforced only when the caller
       // volunteered a challenge, which let anyone opt out by simply omitting
       // the parameter. Every observed client sends S256 already, and the
