@@ -1873,10 +1873,29 @@ export default {
           status: 400,
         });
       }
-      if (codeChallenge && codeChallengeMethod && codeChallengeMethod !== "S256") {
-        return new Response("Only S256 code_challenge_method is supported", {
-          status: 400,
-        });
+      // PKCE is mandatory. It was previously enforced only when the caller
+      // volunteered a challenge, which let anyone opt out by simply omitting
+      // the parameter. Every observed client sends S256 already, and the
+      // server metadata has only ever advertised S256.
+      //
+      // NB this does not by itself stop an attacker-chosen redirect_uri: an
+      // attacker who starts the flow runs their own challenge and verifier,
+      // so PKCE is satisfied and the code still lands wherever they asked.
+      // Binding redirect_uri to the registering client is the fix for that;
+      // this closes the downgrade, nothing more.
+      if (!codeChallenge) {
+        return new Response(
+          "Missing code_challenge — PKCE is required (S256)",
+          { status: 400 }
+        );
+      }
+      // RFC 7636 §4.3: an absent code_challenge_method means "plain", which
+      // we do not support, so it must be stated explicitly.
+      if (codeChallengeMethod !== "S256") {
+        return new Response(
+          "Only S256 code_challenge_method is supported",
+          { status: 400 }
+        );
       }
 
       const authState = await signPayload<AuthState>(env.SIGNING_SECRET, {
@@ -1957,30 +1976,42 @@ export default {
           400
         );
       }
-      if (payload.cc) {
-        if (!codeVerifier) {
-          return jsonResponse(
-            {
-              error: "invalid_request",
-              error_description: "Missing code_verifier",
-            },
-            400
-          );
-        }
-        const ok = await verifyPKCE(
-          codeVerifier,
-          payload.cc,
-          payload.ccm || "S256"
+      // A code minted without a challenge can only come from the pre-PKCE
+      // /authorize, so refuse it rather than falling back to no verification.
+      // Codes live 5 minutes, so this can only affect a flow already in
+      // flight across the deploy that introduced mandatory PKCE.
+      if (!payload.cc) {
+        return jsonResponse(
+          {
+            error: "invalid_grant",
+            error_description:
+              "Authorization code was not bound to a PKCE challenge",
+          },
+          400
         );
-        if (!ok) {
-          return jsonResponse(
-            {
-              error: "invalid_grant",
-              error_description: "PKCE verification failed",
-            },
-            400
-          );
-        }
+      }
+      if (!codeVerifier) {
+        return jsonResponse(
+          {
+            error: "invalid_request",
+            error_description: "Missing code_verifier",
+          },
+          400
+        );
+      }
+      const pkceOk = await verifyPKCE(
+        codeVerifier,
+        payload.cc,
+        payload.ccm || "S256"
+      );
+      if (!pkceOk) {
+        return jsonResponse(
+          {
+            error: "invalid_grant",
+            error_description: "PKCE verification failed",
+          },
+          400
+        );
       }
 
       // Linkly issues no expires_in or refresh_token. Advertise a long TTL so
