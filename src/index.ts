@@ -29,6 +29,11 @@ const LINK_OUTPUT = {
     slug: { type: ["string", "null"] },
     name: { type: ["string", "null"] },
     note: { type: ["string", "null"] },
+    metadata: {
+      type: ["object", "null"],
+      additionalProperties: true,
+      description: "Your own key-value data attached to the link (string keys and values)",
+    },
     workspace_id: { type: ["integer", "null"] },
     created_by_user_id: { type: ["integer", "null"] },
     enabled: { type: ["boolean", "null"] },
@@ -302,6 +307,12 @@ const TOOLS = [
           type: "string",
           description: "A private note about this link",
         },
+        metadata: {
+          type: "object",
+          description:
+            "Your own key-value data to attach to the link, such as IDs from your system, e.g. {\"order_id\": \"A-10293\"}. Values are stored as strings (numbers and booleans are converted). Up to 20 keys, keys up to 40 characters, values up to 500 characters. Also included in webhook payloads.",
+          additionalProperties: { type: ["string", "number", "boolean"] },
+        },
         domain: {
           type: "string",
           description:
@@ -410,6 +421,12 @@ const TOOLS = [
         note: {
           type: "string",
           description: "New private note",
+        },
+        metadata: {
+          type: "object",
+          description:
+            "Key-value data to attach to the link, such as IDs from your system. Keys you send are merged into the link's existing metadata and other keys are left alone; set a key to null to remove it. Values are stored as strings. Up to 20 keys, keys up to 40 characters, values up to 500 characters. Also included in webhook payloads.",
+          additionalProperties: { type: ["string", "number", "boolean", "null"] },
         },
         enabled: {
           type: "boolean",
